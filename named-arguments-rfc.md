@@ -53,14 +53,18 @@ comments I will not attribute them to one in particular.
 
 They are numbered to simplify discussions about them.
 
+I also try to always use the same function definition so that the differences are the syntax for
+named arguments.
+
 ### In definitions [def]
 
-1. `fn name(a: &str, named: &str)`: using the name is optional and it can be used by the caller or
+1. `fn fun(a: &str, named: &str)`: using the name is optional and it can be used by the caller or
    not.
 
 ### In calls [call]
 
-1. `function_call("anonymous argument", named: "argument")`
-2. `function_call("anonymous argument", named = "argument")`
+0. Function call as they are currently: `fun("anonymous", "value")`
+1. `fun("anonymous", named: "value")`
+2. `fun("anonymous", named = "value")`
 
 # What about other programming languages ?
