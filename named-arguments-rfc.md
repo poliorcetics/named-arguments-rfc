@@ -17,6 +17,9 @@ But first, some goals for this post:
   else will).
 - *Default parameters* and *variadic parameters* are **out of scope**. They are orthogonal to named
   arguments and can be consdered with or without named arguments.
+- *Overloading* is also **out of scope**. The *named arguments* solution proposed should not affect
+  method resolution. This can evolve if a consensus is reached about that but I am not qualified to
+  make this decision alone.
 
 # Motivation
 
@@ -69,6 +72,11 @@ pool.connect("https://a.b.c/endpoint/", with: ConnectionOptions {
 
 # Past Rust-only considerations
 
+This sections focuses on the discussion that happened in the Rust world about *named arguments*.
+
+DISCLAIMER: I did not read *everything* in details, it is possible I missed things. I at least
+skimmed quickly over all of them.
+
 ## Relevants discussions
 
 Here are some past discussions on IRLO:
@@ -87,33 +95,34 @@ Some arguments and opinions are recurring in most of the links above. I will try
 summarise most of them here.
 
 - **Named arguments make changing function parameters names a breaking change**: this is certainly
- true. That's even the point of *named arguments*, to have a stable and clear interface to a 
+ true. That's even the point of *named arguments*, to have a stable and clear interface to a
  function call, just like some `struct`s have public members or like `enum A { Variant { line: String } }`
  instead of simply `enum B { Variant(String) }`. This point is often raised to make a point about
- brittle syntax: *named arguments* should make it clear what is named and what is not so that 
+ brittle syntax: *named arguments* should make it clear what is named and what is not so that
  programmers can be sure they are not breaking the public interface of something in a minor version
  change.
 
 ## Past proposed syntaxes
 
 I will here summarise the proposed syntaxes I could find for both definition and calls to functions
-with named arguments. Since many of those syntaxes have been proposed in several RFCs or in their
+with *named arguments*. Since many of those syntaxes have been proposed in several RFCs or in their
 comments I will not attribute them to one in particular.
 
-They are numbered to simplify discussions about them.
+They are numbered to simplify discussions about them. Edits to this section will not move the
+numbers so that comments stay as relevant as possible.
 
 I also try to always use the same function definition so that the differences are the syntax for
-named arguments.
+*named arguments*.
 
-### In definitions [def]
+### In definitions
 
 1. `fn fun(a: &str, named: &str)`: using the name is optional and it can be used by the caller or
    not.
 
-### In calls [call]
+### In calls
 
 0. Function call as they are currently: `fun("anonymous", "value")`
 1. `fun("anonymous", named: "value")`
-2. `fun("anonymous", named = "value")`
+1. `fun("anonymous", named = "value")`
 
 # What about other programming languages ?
