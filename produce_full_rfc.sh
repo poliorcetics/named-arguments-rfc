@@ -1,7 +1,10 @@
 RFC_FILE="0000-named-arguments-rfc.md"
 
+# Clearing the file's content.
+echo "" > ${RFC_FILE}
+
 function write_file() {
-    cat $1 > ${RFC_FILE}
+    cat $1 >> ${RFC_FILE}
     echo "" >> ${RFC_FILE}
 }
 
