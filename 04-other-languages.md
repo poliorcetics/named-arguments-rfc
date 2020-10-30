@@ -12,7 +12,9 @@ created are not listed and it is entirely possible a solution (and the language 
 missed. If you find that is the case, please signal it to help improve this section.
 
 Languages that have direct support for named arguments will not be listed in the other categories,
-even if they fit in them
+even if they fit in them.
+
+Source: [Rosetta code]
 
 ## Structured records
 
@@ -52,7 +54,8 @@ int main(void) {
 In such languages an external type is often necessary to implement *named arguments*. If you have
 functions taking another set of arguments, you will need another type. Depending on the language,
 types can be created inline (`call(MyType { name1: val1, ... })`, as in Rust) or not, which adds
-more boilerplate (as in the long form of the C example above).
+more boilerplate (as in the long form of the C example above). Most statically typed languages
+needs the type to be explicit too, adding more boilerplate.
 
 In some languages, like JavaScript, creating an external type is not necessary, passing an
 anonymous type with the expected properties is enough. This reduces the boilerplate, at the cost
@@ -66,7 +69,7 @@ widening API surface and adding boilerplate.
 ### Languages using this method
 
 - ALGOL 68 (not kwown to be used in any real code though)
-- AppleScript
+- AppleScript (before macOS 10.10)
 - Bracmat
 - C
 - C++
@@ -78,6 +81,7 @@ widening API surface and adding boilerplate.
 - Lingo
 - Perl
 - PHP
+- Rust
 - StandardML
 - Tcl
 - Wren
