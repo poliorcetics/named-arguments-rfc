@@ -85,3 +85,70 @@ widening API surface and adding boilerplate.
 - StandardML
 - Tcl
 - Wren
+
+## Optional and/or unordered named arguments
+
+This section is for languages that have *named arguments* but function calls can choose whether to
+use them or not.
+
+An example in Python 3:
+
+```python3
+def open_port(port, max_connexions):
+    print(f"port: {port}")
+    print(f"max connexions: {max_connexions}")
+
+open_port(12345, 10)
+open_port(12345, max_connexions=10)
+open_port(max_connexions=10, port=12345)
+
+# This line will produce an error but this is not the case for all languages
+# open_port(port=12345, 10)
+#
+# SyntaxError: positional argument follows keyword argument
+```
+
+When languages have this feature, using *named arguments* is left to the  user, not the author of a
+library but it is library authors that are responsible for the names and changing them is a
+source-breaking change.
+
+This places additionial burden on library authors without offering them much: since users can just
+ignore the names authors are not able to rely on them to help with clarity and must instead often
+design around them.
+
+What's more, order is often not important as long as the names match which means a reviewer has to
+be careful when two parameters are named similarly: there could be an uncaught bug hiding.
+
+> From what I could find some domains force the use of *named arguments* when they are available,
+> like Ada in military programs though I did not find conclusive proof one way or the other.
+
+### Languages with this feature
+
+- Ada
+- AppleScript (since macOS 10.10)
+- C# (since 4.0)
+- Common Lisp
+- Dyalect
+- Elixir
+- Factor
+- Fortran
+- Julia (needs a `;` in a function parameter list, the names after are mandatory when calling)
+- Kotlin
+- Lasso (only unordered, not optional)
+- Lua
+- Maple
+- Modula-3
+- Nermerle
+- Nim
+- Oz
+- Phix (named arguments must occur to the right of unnamed arguments but order does not matter)
+- PowerShell
+- R (will fill missing named args with unnamed args in the given order, very brittle)
+- Racket
+- Raku (seems to be the same behaviour as R)
+- Ruby (since 2.0)
+- Scala
+- Sidef
+- Stanard ML
+- Suneido (same as Phix)
+- Visual Basic
