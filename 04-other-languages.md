@@ -16,10 +16,11 @@ even if they fit in them.
 
 Source: [Rosetta code]
 
-## Structured records
+## Named arguments through direct types
 
 This section is for languages that do not have *named arguments* directly but can use external
-types to emulate them.
+types to emulate them. Pretty much all languages can do that so this section is only for languages
+that do **not** have named arguments directly.
 
 An example in `C`:
 
