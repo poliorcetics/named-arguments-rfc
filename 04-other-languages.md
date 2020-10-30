@@ -87,6 +87,36 @@ widening API surface and adding boilerplate.
 - Tcl
 - Wren
 
+## Named arguments through builder types
+
+Some languages cannot use the previous method and must use a *Builder pattern* to get a form of
+named arguments, as in the (shortened) Java example below. As with the last method, pretty much
+every language can use this method. The list below will only consider languages that cannot apply
+the previous (shorter) method nor have *named arguments*.
+
+```java
+processNutritionFacts(new NutritionFacts.Builder(240, 8)
+                                        .calories(100)
+                                        .sodium(35)
+                                        .carbohydrate(27)
+                                        .build());
+```
+
+This is often boiler plate-heavy (a builder type and an option type are needed) and just transmit
+part of the problem to the builder type itself (as in the `Builder(240, 8)` call above).
+
+It also often easier to forget to make some call if the builder type is not a state machine but a
+simple storage for optional values. On the contrary having a state machine can force certain calls
+even when they are not used by the method using the result of the `.build()` call.
+
+Builder types are very appropriate for more complex configurations but will quickly become heavy
+boilerplate for two-parameter methods.
+
+### Languages using this method
+
+- Java
+- C# (before 4.0)
+
 ## Optional and/or unordered named arguments
 
 This section is for languages that have *named arguments* but function calls can choose whether to
