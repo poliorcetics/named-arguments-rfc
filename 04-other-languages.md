@@ -182,3 +182,36 @@ be careful when two parameters are named similarly: there could be an uncaught b
 - Standard ML
 - Suneido (same as Phix)
 - Visual Basic
+
+## Mandatory and ordered named arguments
+
+This section is for languages that have the strictest form of *named arguments*: mandatory and
+ordered.
+
+```swift
+func open_port(_ port: Int, withMaxConnexions max_connexion: Int) {
+    print("\(port)")
+    print("\(max_connexion)")
+}
+
+open_port(12345, withMaxConnexions: 10)
+```
+
+Depending on the language there is a public name for the argument or not. When this is not the case
+*named arguments* are often seen as a burden because having to call `sin(x: x)` is redundant and
+brings nothing in term of informations while still pushing the burden of increased API surface on
+maintainers.
+
+On the other hand, users of languages with *named arguments* that have both a public name and a 
+private name (AppleScript, Objective-C, OCaml, Swift) often seem to miss them in other languages for
+their clarity and convenience. The ability to turn them off is a must though, as seen in the
+`sin(x: x)` example.
+
+### Languages using this feature
+
+- AppleScript
+- Objective-C
+- OCaml
+- Python
+- Swift
+
