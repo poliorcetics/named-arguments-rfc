@@ -70,7 +70,6 @@ widening API surface and adding boilerplate.
 ### Languages using this method
 
 - ALGOL 68 (not kwown to be used in any real code though)
-- AppleScript (before macOS 10.10)
 - Bracmat
 - C
 - C++
@@ -156,7 +155,6 @@ be careful when two parameters are named similarly: there could be an uncaught b
 ### Languages with this feature
 
 - Ada
-- AppleScript (since macOS 10.10)
 - C# (since 4.0)
 - Common Lisp
 - Dyalect
@@ -174,12 +172,13 @@ be careful when two parameters are named similarly: there could be an uncaught b
 - Oz
 - Phix (named arguments must occur to the right of unnamed arguments but order does not matter)
 - PowerShell
+- Python
 - R (will fill missing named args with unnamed args in the given order, very brittle)
 - Racket
 - Raku (seems to be the same behaviour as R)
-- Ruby (since 2.0)
+- Ruby
 - Scala
 - Sidef
-- Stanard ML
+- Standard ML
 - Suneido (same as Phix)
 - Visual Basic
