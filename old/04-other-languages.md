@@ -202,7 +202,7 @@ Depending on the language there is a public name for the argument or not. When t
 brings nothing in term of informations while still pushing the burden of increased API surface on
 maintainers.
 
-On the other hand, users of languages with *named arguments* that have both a public name and a 
+On the other hand, users of languages with *named arguments* that have both a public name and a
 private name (AppleScript, Objective-C, OCaml, Swift) often seem to miss them in other languages for
 their clarity and convenience. The ability to turn them off is a must though, as seen in the
 `sin(x: x)` example.
@@ -214,4 +214,23 @@ their clarity and convenience. The ability to turn them off is a must though, as
 - OCaml
 - Python
 - Swift
+
+## More on Python 3 and Swift
+
+Python 3 and Swift are special and very informative examples because they are two languages where
+it was possible to write *named arguments* only functions but the languages moved in opposite
+directions: Python 3 gained a way to remove them in [PEP 570] while Swift continues to use them
+more and more and functions in Swift are document with the name of their arguments:
+`open_port(_:withMaxConnexions:)`.
+
+> Note: while this section concentrate on Swift, it must be noted that OCaml provides the same
+> features using a different approach. See [this link][Ocaml-Rosetta] for more informations and
+> an example. The example of Swift has been chosen because it is more widely used than OCaml and
+> closer the C-family of languages, ensuring its syntax will be understood even by non-practioners,
+> and especially the Rust community that is the target of this document. The same goes for
+> Objective-C and AppleScript.
+
+[Rosetta code]: https://rosettacode.org/wiki/Named_parameters
+[Ocaml-Rosetta]: https://rosettacode.org/wiki/Named_parameters#OCaml
+[PEP 570]: https://www.python.org/dev/peps/pep-0570/
 

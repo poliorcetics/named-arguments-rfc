@@ -1,0 +1,48 @@
+This is my first attempt at an RFC, any feedback is welcome :slight_smile:.
+
+Named arguments have been proposed before, several times, in several forms. This document will list
+below some links found on this forum about them or in past RFCs. It will also try to review what 
+exists in other programming languages before presenting its solution.
+
+But first, some goals for this post:
+
+- The solution **must** be backward compatible so that it can be backported to Rust Edition 2015,
+  2018 and possibly 2021 (depending on the time (and if) this is accepted).
+- The solution should improve readability/usability without requiring new keywords or much in the
+  way of typing (so that programmers can use them without having to write a book and a half just
+  for some non-critical feature).
+- Clearly present other options and alternatives (maybe one of them is better and someone will see
+  it before a wrong choice is made).
+- *Default parameters* and *variadic parameters* are **out of scope**. They are orthogonal to named
+  arguments and can be consdered with or without named arguments.
+- *Overloading* is also **out of scope**. The named arguments solution proposed should not affect
+  method resolution. This can evolve if a consensus is reached about that but such a significant
+  change is probably outside of what can be proposed and designed by one person.
+
+---
+
+- Feature Name: `named_arguments`
+- Start Date: **TO FILL WITH TODAY'S DATE**
+- RFC PR: [rust-lang/rfcs#0000](https://github.com/rust-lang/rfcs/pull/0000)
+- Rust Issue: [rust-lang/rust#0000](https://github.com/rust-lang/rust/issues/0000)
+
+# Summary
+[summary]: #summary
+
+This RFC introduces *named arguments* for Rust. Named arguments are the ability to call a function
+or method and precising the name of the arguments, greatly improving clarity in many situations. Of
+course function where the argument is already clear do not have to use them: `sin(x: x)` would be
+ridiculous and redundant. Named arguments as proposed here are **not** source-breaking: existing
+functions and methods will continue to work without any change.
+
+An example in `Python` for clarity:
+
+```python
+def open_port(port: int, max_connexions: int, timeout: int):
+    print(f"Port: {port}")
+    print(f"Max conn: {max_connexions}")
+    print(f"Timeout: {timeout}")
+
+# Calling the function with names for the arguments.
+open_port(port=12345, max_connexions=10, timeout=60)
+```
