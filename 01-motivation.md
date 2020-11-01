@@ -46,4 +46,12 @@ pool.connect("https://a.b.c/endpoint/", with: ConnectionOptions {
     account: "name",
     ..Default::default()
 });
+
+// The same with a builder. Note that the builder takes advantage of the
+// hypothetical named arguments syntax too.
+pool.connect("https://a.b.c/endpoint/", with: ConnectionsOptionsBuilder::new()
+    .timeout(seconds: 200)
+    .account("name")
+    .build()
+);
 ``` 
