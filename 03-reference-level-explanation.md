@@ -10,9 +10,15 @@ This is the technical portion of the RFC. Explain the design in sufficient detai
 The section should return to the examples given in the previous section, and explain more fully how
 the detailed proposal makes those examples work.
 
+## Interaction with traits
+
 ## Interaction with closures
 
 ## Interaction with destructuring
+
+```rust
+fn process_pair( (id, name): (u32, String) ) { unimplemented!() }
+```
 
 ## Interaction with type ascription
 
