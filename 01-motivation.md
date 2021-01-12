@@ -85,3 +85,8 @@ through a web interface does not have them, reading code on Github will not show
 coworker does not like them, there are many reasons for them not to appear. Named arguments are part
 of the code, they always appear when intended to. Just like types, they help by adding another
 layer of clarity to code, which helps with soundness and safety.
+
+- Improve coherence in the language.
+
+Named arguments already exists for `struct`s today: `Latitude { x: 42.1, y: 84.2 }`, having named
+arguments for functions can be seen as an extension of that capability.
