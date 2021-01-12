@@ -34,32 +34,62 @@ Here are some past discussions on IRLO:
 
 1. The [Wishlist issue](https://github.com/rust-lang/rfcs/issues/323) says named arguments (and
    other features) are thought about but the design space must be studied before rushing into one
-   solution that will later prove insufficient or even plain wrong.
+   solution that will later prove insufficient or even plain wrong. Even if this RFC is not approved
+   I hope the section below about other programming languages listing the different possibilites
+   chosen by others will help future RFCs that will attempt to tackle this or something similar.
 1. The (I think) [first RFC to propose them](https://github.com/rust-lang/rfcs/pull/257)
    introduced them in conjunction with *default parameters* and was closed as postponed. Some
    remarks on this RFC raised good points that have also been raised in subsequent RFCs, they will
    be listed in a section below.
-1. [Struct sugar RFC #343](https://github.com/rust-lang/rfcs/pull/343): it proposed both a form of 
-   named arguments and default parameters. It was marked as postponed and lots of people 
+1. [Struct sugar RFC #343](https://github.com/rust-lang/rfcs/pull/343): it proposed both a form of
+   named arguments and default parameters. It was marked as postponed and lots of people
    commenting on the issue wanted less magical sugar.
-1. [Keyword arguments #805](https://github.com/rust-lang/rfcs/pull/805): 
+1. [Keyword arguments #805](https://github.com/rust-lang/rfcs/pull/805)
+1. [Named arguments #2964](https://github.com/rust-lang/rfcs/pull/2964)
 
 ### Recurring points
 
 Some arguments and opinions are recurring in most of the links above. I will try to list and
-summarise most of them here.
+summarise most of them here. They are in no particular order.
 
 - **Named arguments make changing function parameters names a breaking change**: this is certainly
- true. That's even the point of named arguments, to have a stable and clear interface to a
- function call, just like some `struct`s have public members or like `enum A { Variant { line: String } }`
- instead of simply `enum B { Variant(String) }`. This point is often raised to make a point about
- brittle syntax: named arguments should make it clear what is named and what is not so that
- programmers can be sure they are not breaking the public interface of something in a minor version
- change.
+  true. That's even the point of named arguments, to have a stable and clear interface to a
+  function call, just like some `struct`s have public members or like `enum A { Variant { line: String } }`
+  instead of simply `enum B { Variant(String) }`. This point is often raised to argue about
+  brittle syntax. This can be true if the feature is wrongly thought out and designed and named
+  arguments should certainly make it clear what is named and what is not so that programmers can be
+  sure they are not breaking the public interface of some function in a minor version change.
+- **Named arguments encourage less well thought out interfaces**: I do not think any conclusive
+  evidence has ever been brought to light about this point. On the other hand, the opposite has
+  been extensively studied and battle-tested through Swift's version of the feature, which is
+  lauded by practionners of the language, notably library designers. Another example, from Rust
+  even, is structs. Why is `Latitude { x: 42.1, y: 84.2 }` seen as good if named arguments are not
+  good ?
+- **Use a (builder) type instead**: this argument is counterproductive to me, here it is in another
+  form: why would you use (especially generic) functions when macros can do the job and more well
+  enough ? Types (and builders) have their uses and they can be used in conjunction to named
+  arguments, they are not opposites, just like macros and functions nowadays.
+- **Suppose named arguments are allowed, soon people will ask for arbitrary argument order and optional arguments**:
+  they are different features. One being accepted is **not** a sign of the other being accepted. An
+  example is inheritance in today's Rust. Traits can be subtraits (`DoubleEndedIterator: Iterator`)
+  but types cannot inherit other types and this has never been accepted before when people asked for
+  it.
+- **We would benefit far more from reducing the boilerplate involved in the builder pattern**: the
+  builder pattern is not opposite to named arguments. Named arguments will **not** help you when
+  there are 13 parameters to handle for a function input. A builder pattern will be overkill if
+  there are only two `usize` parameters.
+- **Developers need to memorize what arguments are positional and cannot be named in function calls, and what arguments are named**:
+  this is true. The response is that code is read **far** more than it is written. When a choice
+  has to be made between the writer and reader this should be taken into account. Named arguments
+  incur a cost of a minute or two of thinking at most in the majority of cases from my experience
+  in Python 3 and Swift. They can save dozens of peoples hours of debugging and reading documentation.
+  In today's Rust you need to remember the name of a struct's field to initialize it but I have not
+  seen people complain about it either, despite the fact that there is no difference between the
+  private and public name of the field.
 
 ## What about other programming languages ?
 
-Rust does not exist in a bubble and a lot of people have thought about named arguments for their
+Rust does not exist in a vacuum and a lot of people have thought about named arguments for their
 preferred language. This section will look at what other languages have done and how (and if) they
 solved the problems that named arguments attempts to solve.
 
@@ -76,6 +106,27 @@ even if they fit in them.
 Source: [Rosetta code]
 
 [Rosetta code]: https://rosettacode.org/wiki/Named_parameters
+
+### Named arguments through comments
+
+Some examples found in LLVM code ([ex1], [ex2], [ex3]):
+
+```c++
+config::Provider::fromYAMLFile(UserConfig, /*Directory=*/"", TFS)
+
+/* Override */ OverrideClangTidyOptions, TFS.view(/*CWD=*/llvm::None)
+
+llvm::sys::fs::real_path(CheckFile, Path, /*expand_tilde=*/true)
+```
+
+All languages that support inline comments can do this. The simple fact this is used at all is
+telling since it is very easy for such comments to get out of date and become obsolete or even
+plain wrong but using such a brittle form of named arguments was still deemed necessary and worth
+the maintenance cost.
+
+[ex1]: https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L794
+[ex2]: https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L818
+[ex3]: https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L849
 
 ### Named arguments through direct types
 
@@ -156,6 +207,9 @@ the previous (shorter) method nor have named arguments.
 
 ```java
 processNutritionFacts(new NutritionFacts.Builder(240, 8)
+                                        // What are the units used below ?
+                                        // The builder is only partially
+                                        // helpful here.
                                         .calories(100)
                                         .sodium(35)
                                         .carbohydrate(27)
@@ -170,7 +224,10 @@ simple storage for optional values. On the contrary having a state machine can f
 even when they are not used by the method using the result of the `.build()` call.
 
 Builder types are very appropriate for more complex configurations but will quickly become heavy
-boilerplate for two-parameter methods.
+boilerplate for two-parameter methods. What's more, builder pattern are often not used internally,
+only in public facing APIs. Private functions and methods should not be left on the side just
+because they are private, but they should also not incur heavy maintenance costs of boilerplate just
+because the developer wanted to write something safe and self-documenting.
 
 #### Languages using this method
 
@@ -233,7 +290,7 @@ be careful when two parameters are named similarly: there could be an uncaught b
 - Oz
 - Phix (named arguments must occur to the right of unnamed arguments but order does not matter)
 - PowerShell
-- Python
+- Python (2 & 3)
 - R (will fill missing named args with unnamed args in the given order, very brittle)
 - Racket
 - Raku (seems to be the same behaviour as R)
@@ -265,7 +322,7 @@ maintainers.
 
 On the other hand, users of languages with named arguments that have both a public name and a
 private name (AppleScript, Objective-C, OCaml, Swift) often seem to miss them in other languages for
-their clarity and convenience. The ability to turn them off is a must though, as seen in the
+both their clarity and convenience. The ability to turn them off is a must though, as seen in the
 `sin(x: x)` example.
 
 #### Languages using this feature
@@ -293,3 +350,65 @@ more and more and functions in Swift are documented with the name of their argum
 
 [Ocaml-Rosetta]: https://rosettacode.org/wiki/Named_parameters#OCaml
 [PEP 570]: https://www.python.org/dev/peps/pep-0570/
+
+#### Python 3
+
+Python 3 has had named arguments for a long time, since it was first released. Despite that they
+are not used much outside of necessity to bypass default arguments and change the nth argument when
+`n-1` has a default value. Many Python 3 functions and methods that are implemented in C behind the
+scene even forbid named arguments, `range` being one of the most famous example.
+
+```python
+def only_named_arguments(*, arg1: int, arg2: str):
+    print(arg1)
+    print(arg2)
+
+# Using both names (in whatever order) is the only valid way to call the function
+only_named_arguments(arg2="two", arg1=1)
+```
+
+With [PEP 570], Python 3 introduced a way to disable named arguments for a function/method call:
+
+```python
+def only_positional_arguments(arg1: int, arg2: str, /):
+    print(arg1)
+    print(arg2)
+
+# Using positional arguments is the only valid way to call the function
+only_positional_arguments(1, "two")
+```
+
+#### Swift
+
+Swift has had named arguments since its inception and they are fully integrated to the language.
+They affect overload resolution for example so methods are described as `Int.isMultiple(of:)`,
+not `Int.isMultiple`.
+
+Swift named arguments are opt-out instead of opt-in. This was possible because they were here from
+the start, which is obviously not a possibility for Rust.
+
+Below are all the possible ways for Swift named arguments to work in the language:
+
+```swift
+// - `range` is both the public and internal name, it must be used when calling
+//   the function and when writing its implementation.
+func random(range: Range<Int>) -> Int {
+    var g = SystemRandomNumberGenerator()
+    return Int.random(in: range, using: &g)
+}
+
+// - `in` is the public facing name, usable only when calling the function.
+// - `range` is the internal name, usable only inside the function.
+func random(in range: Range<Int>) -> Int {
+    var g = SystemRandomNumberGenerator()
+    return Int.random(in: range, using: &g)
+}
+
+// - `_` is a placeholder used to note the function is called without a named
+//   argument. `range` CANNOT be used when calling the function.
+// - `range` is the internal name, usable only inside the function.
+func random(_ range: Range<Int>) -> Int {
+    var g = SystemRandomNumberGenerator()
+    return Int.random(in: range, using: &g)
+}
+```
