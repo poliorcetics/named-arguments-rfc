@@ -54,4 +54,34 @@ pool.connect("https://a.b.c/endpoint/", with: ConnectionsOptionsBuilder::new()
     .account("name")
     .build()
 );
-``` 
+```
+
+- Reality.
+
+[Taken from a previous RFC](https://github.com/rust-lang/rfcs/pull/2964)
+
+Instead of looking at how code could be written in carefully crafted APIs, we should look at how
+code is being written in reality. Programmers don't always have time to rack their brains over how
+to create the most beautiful API. They want to get things done.
+
+Named arguments allow iterating quickly without sacrificing readability, because they are dead simple.
+There's no need to create new types or make up long function names.
+
+- Improve soundness and safety.
+
+The documentation for [`Vec::reserve_exact`](https://doc.rust-lang.org/std/vec/struct.Vec.html#method.reserve_exact)
+shows clearly the parameter is for *additional* capacity. But is it always clear in code ?
+
+```rust
+let mut vec = vec![1];
+// Is this `additional` or `total` capacity ? The name of the method is quite
+// unclear here.
+vec.reserve_exact(10);
+```
+
+An argument against named argument is that hints like those provided by Rust-Analyzer are here for
+those cases. This is true, but they are not always available. They can be disabled, reviewing a PR
+through a web interface does not have them, reading code on Github will not show them, maybe your
+coworker does not like them, there are many reasons for them not to appear. Named arguments are part
+of the code, they always appear when intended to. Just like types, they help by adding another
+layer of clarity to code, which helps with soundness and safety.
