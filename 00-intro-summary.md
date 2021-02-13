@@ -1,4 +1,4 @@
-This is my first attempt at an RFC, any feedback is welcome :slight_smile:.
+This is my first attempt at an RFC, any feedback is welcome :).
 
 Named arguments have been proposed before, several times, in several forms. This document will list
 below some links found on this forum about them or in past RFCs. It will also try to review what
@@ -7,7 +7,8 @@ exists in other programming languages before presenting its solution.
 But first, some goals for this RFC:
 
 - The solution **must** be backward compatible so that it can be backported to Rust Edition 2015,
-  2018 and possibly 2021 (depending on the time (and if) this is accepted).
+  2018 and 2021. Even if a backport is not wanted, having it has a goal means this RFC should not
+  conflict with existing features in one edition but not in another.
 - The solution should improve readability/usability without requiring new keywords or much in the
   way of typing (so that programmers can use them without having to write a book and a half just
   for some non-critical feature).
