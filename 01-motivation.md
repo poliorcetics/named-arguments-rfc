@@ -18,9 +18,11 @@ my_vec.insert(elem: 2, at: 3)
 
 In the example code above it is easy for a developer to remember which argument does what simply
 by looking at the method call, without having to write a little toy example or look at the
-documentation for the type (or the trait).
+documentation for the type (or the trait). Autocompletion can help by providing the names and filling
+them in advance, meaning no more typing for most people, just clearer code. Code is also read more
+than it is written, the clearer it is, the less mistakes slip through reviews.
 
-- Named arguments are simple to create compared to the other options.
+- Named arguments are simple to **create** compared to the other options.
 
 In all languages that have them, named arguments are simple to create: they do not require a new
 type and they do not require a builder pattern (and so another type). This does not means that
@@ -28,11 +30,12 @@ builder patterns or new types are useless: I argue that the use cases are simply
 Named arguments should be used to clarify function calls, **not** write functions and methods
 with 13 parameters, 7 of which are optional: a builder would be more useful in this situation.
 
-- Named arguments are simple to use compared to the other options.
+- Named arguments are simple to **use** compared to the other options.
 
 Calling a builder for the `my_vec.insert` call above is clearly overengineering and creating a type
 for such a simple operation is overkill too. Named arguments are made to fill this spot where the
-other solutions are too big for what's intended.
+other solutions are too big for what's intended but clarity is lost without something more than
+positional arguments.
 
 - Named arguments can be combined with other features to increase readability even more.
 
@@ -84,9 +87,17 @@ those cases. This is true, but they are not always available. They can be disabl
 through a web interface does not have them, reading code on Github will not show them, maybe your
 coworker does not like them, there are many reasons for them not to appear. Named arguments are part
 of the code, they always appear when intended to. Just like types, they help by adding another
-layer of clarity to code, which helps with soundness and safety.
+layer of clarity to code, which helps with soundness and safety, and just like types can be inferred
+when writing `let a = b + c`, named arguments as proposed here are not mandatory: forcing `sin(x: x)`
+is **not** improving anything.
 
 - Improve coherence in the language.
 
 Named arguments already exists for `struct`s today: `Latitude { x: 42.1, y: 84.2 }`, having named
 arguments for functions can be seen as an extension of that capability.
+
+The previous paragraph opens an argument against: `Wrapper(x)` does not have named arguments and it
+is quite clear. I would argue this is completely and utterly false: the argument name **is** the
+name of the type itself. Wrapper types are here to increase clarity and provide additional guarantees
+through the type system, and they do so by being explicit (`NonZeroUsize` and friends are wrapper
+types that make their usage clear through their name for example).

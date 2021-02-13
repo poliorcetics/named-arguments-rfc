@@ -31,8 +31,8 @@ But first, some goals for this RFC:
 [summary]: #summary
 
 This RFC introduces *named arguments* for Rust. Named arguments are the ability to call a function
-or method and precising the name of the arguments, greatly improving clarity in many situations. Of
-course function where the argument is already clear do not have to use them: `sin(x: x)` would be
+or method while precising the name of the arguments, greatly improving clarity in many situations.
+Of course function where the argument is already clear do not have to use them: `sin(x: x)` would be
 ridiculous and redundant. Named arguments as proposed here are **not** source-breaking: existing
 functions and methods will continue to work without any change. Named arguments as proposed here
 are **opt-in**. Changing the name of `f(a: usize)` to `f(b: usize)` will **not** be a breaking
