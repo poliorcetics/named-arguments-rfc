@@ -1,3 +1,6 @@
+# Simple script to mash the different markdown files together and
+# produce the single document necessary for the RFC PR.
+
 RFC_FILE="0000-named-arguments-rfc.md"
 
 # Clearing the file's content.
