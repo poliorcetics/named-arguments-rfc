@@ -25,6 +25,20 @@ happen directly on the PR.
   method resolution. This can evolve if a consensus is reached about that but such a significant
   change is probably outside of what can be proposed and designed by one person.
 
+## TODO list
+
+- [x] Intro / Summary
+- [x] Motivation
+- [ ] Guide Level Explanation
+- [ ] Reference Level Explanation
+- [ ] Drawbacks
+- [x] Rationale and Alternatives (**partially done only**)
+- [x] Prior Art
+- [ ] Unresolved Questions
+- [ ] Future Possibilities
+
+- [ ] Cleanup files of their expectations (at the top)
+
 ## Style
 
 To make documents easier to read and edit, try to limit line length to around a hundred (100)
