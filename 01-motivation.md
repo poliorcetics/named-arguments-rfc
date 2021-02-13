@@ -1,6 +1,9 @@
 # Motivation
 [motivation]: #motivation
 
+The main point of this section is that named arguments make for harder to misuse
+interfaces through clarity and simplicity of both declaration and usage.
+
 - Named arguments increase readability.
 
 ```swift
@@ -70,6 +73,34 @@ to create the most beautiful API. They want to get things done.
 Named arguments allow iterating quickly without sacrificing readability, because they are dead simple.
 There's no need to create new types or make up long function names.
 
+As an example: the (amazing) `cargo` tool [would have a use for named arguments][cargo-named-args]:
+
+```rust
+// Code in cargo
+
+compile_opts.filter = ops::CompileFilter::new(
+    LibRule::Default,   // compile the library, so the unit tests can be run filtered
+    FilterRule::All, // compile the binaries, so the unit tests in binaries can be run filtered
+    FilterRule::All, // compile the tests, so the integration tests can be run filtered
+    FilterRule::none(), // specify --examples to unit test binaries filtered
+    FilterRule::none(), // specify --benches to unit test benchmarks filtered
+); // also, specify --doc to run doc tests filtered
+```
+
+VS
+
+```rust
+// Possible code with named arguments
+
+compile_opts.filter = ops::CompileFilter::new(
+    library: LibRule::Default,
+    binaries: FilterRule::All,
+    tests: FilterRule::All,
+    examples: FilterRule::none(), // --examples option
+    benches: FilterRule::none(), // --benches option
+); // also, specify --doc to run doc tests filtered
+```
+
 - Improve soundness and safety.
 
 The documentation for [`Vec::reserve_exact`](https://doc.rust-lang.org/std/vec/struct.Vec.html#method.reserve_exact)
@@ -101,3 +132,5 @@ is quite clear. I would argue this is completely and utterly false: the argument
 name of the type itself. Wrapper types are here to increase clarity and provide additional guarantees
 through the type system, and they do so by being explicit (`NonZeroUsize` and friends are wrapper
 types that make their usage clear through their name for example).
+
+[cargo-named-args]: https://github.com/rust-lang/cargo/blob/b842849732f89df8675eb2d933c384d6338e4466/src/bin/cargo/commands/test.rs#L107-L113
