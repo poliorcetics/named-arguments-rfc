@@ -30,7 +30,7 @@ This subsection focuses on the discussion that happened in the Rust world about 
 
 ### Relevants discussions
 
-Here are some past discussions on IRLO:
+Here are some past discussions on IRLO and past RFCs:
 
 1. The [Wishlist issue](https://github.com/rust-lang/rfcs/issues/323) says named arguments (and
    other features) are thought about but the design space must be studied before rushing into one
@@ -85,7 +85,9 @@ summarise most of them here. They are in no particular order.
   in Python 3 and Swift. They can save dozens of peoples hours of debugging and reading documentation.
   In today's Rust you need to remember the name of a struct's field to initialize it but I have not
   seen people complain about it either, despite the fact that there is no difference between the
-  private and public name of the field.
+  private and public name of the field. What's more, autocompletion exists and is used by a lot of
+  people. It is quite simple to autocomplete a function call with named arguments: instead of
+  writing `myfunction(<cursor>)`, write `my_function(at: <cursor>)`.
 
 ## What about other programming languages ?
 
