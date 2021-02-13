@@ -89,6 +89,22 @@ summarise most of them here. They are in no particular order.
   people. It is quite simple to autocomplete a function call with named arguments: instead of
   writing `myfunction(<cursor>)`, write `my_function(at: <cursor>)`.
 
+### Named arguments already exist in Rust
+
+This is minor but consider the following:
+
+```rust
+trait Restriction {
+    type Inner;
+}
+
+trait Database: Restriction<Inner = u32> {}
+                         // ^^^^^ This is a type-level named argument
+
+fn one_string_to_bind_them_all<I: Iter<Item = String>>(i: I) -> String { /* ... */ }
+                                    // ^^^^ This is another
+```
+
 ## What about other programming languages ?
 
 Rust does not exist in a vacuum and a lot of people have thought about named arguments for their
