@@ -142,3 +142,11 @@ my_vec.insert(2, at: 3)
 // Declaring a function which mixes named and unnamed arguments in some arbitrary order.
 fn mix_and_match(pub named: usize, unnamed: usize, public hidden: usize) { /* ... */ }
 ```
+
+## Can I reorder named arguments ?
+
+**No**. Just like unnamed arguments, named arguments are also position-based and cannot be reordered
+when calling: `register(name:, surname:)` cannot be called as `register(surname:, name:)`.
+
+Reordering them at the definition site is an API break, just like reordering unnamed arguments is
+an API break already.
