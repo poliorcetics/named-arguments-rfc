@@ -21,7 +21,7 @@ its impact in concrete terms.
 
 This section will explain how to declare and use named arguments as a teacher may explain mathematics:
 it will present the concepts while abstracting away much of the reasoning, which is detailed more
-thouroughly in other sections (see [Reference-level explanation](#reference-level-explanation))
+thouroughly in other sections (see [Reference-level explanation][reference-level-explanation])
 
 ## How do I declare a function with named arguments ?
 
