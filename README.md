@@ -29,8 +29,8 @@ happen directly on the PR.
 
 - [x] Intro / Summary
 - [x] Motivation
-- [ ] Guide Level Explanation
-- [ ] Reference Level Explanation
+- [x] Guide Level Explanation
+- [ ] Reference Level Explanation (**working on this**)
 - [ ] Drawbacks
 - [x] Rationale and Alternatives (**partially done only**)
 - [x] Prior Art
