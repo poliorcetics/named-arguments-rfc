@@ -71,17 +71,48 @@ impl MyTrait for WrongImpl {
 ```
 
 Traits are one of Rust most powerful feature and this RFC endavours to integrate well with them, to
-avoid making them second class citizen..
+avoid making them second class citizen.
 
 ## Interaction with function pointers
 
+In today's Rust, this is perfectly valid, even when using all clippy warnings:
+
+```rust
+fn example1(a: u32) -> u32 { a }
+fn example2(b: u32) -> u32 { b }
+
+// No public name
+let _: fn(u32) -> u32 = example1;
+let _: fn(u32) -> u32 = example2;
+
+// Mark a public name as 'a' and the function used 'a' in declaration.
+let _: fn(a: u32) -> u32 = example1;
+
+// Mark a public name as 'c' but used 'b' in declaration
+let _: fn(c: u32) -> u32 = example2;
+```
+
+This RFC does **not** modify this behavior. Function pointers are often used in FFI and this
+behavior is important for it, requiring concordance of named arguments when they do not exist in
+C would be harmful.
+
 ## Interaction with closures
+
+While closures live in the closed environment of Rust and cannot be handed out like function pointers,
+they are similar at the usage point to function pointers. The Swift community has experience with
+closures and named arguments and their solution has several edge cases and small nits that make
+using closures with named arguments a little strange sometimes.
+
+As such, closures and named arguments will be discussed later, in the [Unresolved Questions][unresolved-questions]
+section.
 
 ## Interaction with destructuring
 
 ```rust
 fn process_pair( (id, name): (u32, String) ) { unimplemented!() }
 ```
+
+
 
 ## Interaction with type ascription
 
