@@ -73,6 +73,51 @@ impl MyTrait for WrongImpl {
 Traits are one of Rust most powerful feature and this RFC endavours to integrate well with them, to
 avoid making them second class citizen.
 
+## Interaction with destructuring
+
+```rust
+fn process_pair((id, name): (u32, String)) { /* ... */ }
+fn process_point(Point { x, y: renamed }: Point) { /* ... */ }
+```
+
+Those declarations are valid in today's Rust but how do we add named arguments to them ? Does
+the `pub` keyword as used in previous examples make any sense here ?
+
+The proposed solution is the following:
+
+```rust
+fn process_pair(public_name (id, name): (u32, String) ) { /* ... */ }
+fn process_point(public_name Point { x, y: renamed }: Point) { /* ... */ }
+```
+
+The `pub` keyword is disallowed because how would the compiler know which name to pick ?
+Calls use the same format presented before: they are not affected by destructuring, which is internal
+only.
+
+## Interaction with type ascription
+
+> Citation from a past RFC:
+>
+> Using `=` would be ambiguous, as `foo = bar` is a valid expression (returning `()`). Using `:` as
+> the RFC suggests would be unambiguous today, but become ambiguous in the future if we ever get type
+> ascription (the ability to say let `foo = bar(): int;`, which uses a colon to specify the type of
+> an expression), which is something that has been wanted for a long time. An alternative that is
+> unambiguous even with type ascription would be `=>`.
+
+While this seems to kill any hope of using `:`, there is missing information here.
+
+First, `:` fits more nicely with how functions parameters are declared today. `=` is forbidden for
+the reason given in the quote above. `=>` is available but reminds of pattern matching when it is
+absolutely not. A function called as `matches(name => param)` would be an easy source of confusion.
+
+Second, `:` as type ascription and `:` as a delimiter for named arguments do not, in fact, conflict.
+The first *always* has the form `expr : type`, the second `expected_identifier : expr`.
+
+What's more, there is talk about [disallowing type ascription in some places][disallow-asc] by the
+lang team.
+
+[disallow-asc]: https://rust-lang.zulipchat.com/#narrow/stream/269230-t-lang.2Ftype-ascription/topic/how.20to.20disallow.20ascription
+
 ## Interaction with function pointers
 
 In today's Rust, this is perfectly valid, even when using all clippy warnings:
@@ -105,21 +150,3 @@ using closures with named arguments a little strange sometimes.
 
 As such, closures and named arguments will be discussed later, in the [Unresolved Questions][unresolved-questions]
 section.
-
-## Interaction with destructuring
-
-```rust
-fn process_pair( (id, name): (u32, String) ) { unimplemented!() }
-```
-
-
-
-## Interaction with type ascription
-
-> Citation from a past RFC:
->
-> Using = would be ambiguous, as foo = bar is a valid expression (returning ()). Using : as the RFC
-> suggests would be unambiguous today, but become ambiguous in the future if we ever get type
-> ascription (the ability to say let foo = bar(): int;, which uses a colon to specify the type of
-> an expression), which is something that has been wanted for a long time. An alternative that is
-> unambiguous even with type ascription would be =>.
