@@ -1,8 +1,8 @@
 This is my first attempt at an RFC, any feedback is welcome :).
 
 Named arguments have been proposed before, several times, in several forms. This document will list
-below some links found on this forum about them or in past RFCs. It will also try to review what
-exists in other programming languages before presenting its solution.
+below some links found on this forum about them or in past RFCs. It will also review what exists in
+other programming languages before presenting this RFC's solution.
 
 But first, some goals for this RFC:
 
@@ -10,13 +10,13 @@ But first, some goals for this RFC:
   2018 and 2021. Even if a backport is not wanted, having it has a goal means this RFC should not
   conflict with existing features in one edition but not in another.
 - The solution should improve readability/usability without requiring new keywords or much in the
-  way of typing (so that programmers can use them without having to write a book and a half just
-  for some non-critical feature).
+  way of typing (so that programmers can use them without having to write a line and a half just for
+  some non-critical feature).
 - Clearly present other options and alternatives (maybe one of them is better and someone will see
   it before a wrong choice is made).
-- *Default parameters* and *variadic parameters* are **out of scope**. They are orthogonal to named
-  arguments and can be consdered with or without named arguments.
-- *Overloading* is also **out of scope**. The named arguments solution proposed should not affect
+- _Default parameters_ and _variadic parameters_ are **out of scope**. They are orthogonal to named
+  arguments and can be considered with or without named arguments.
+- _Overloading_ is also **out of scope**. The named arguments solution proposed should not affect
   method resolution. This can evolve if a consensus is reached about that but such a significant
   change is probably outside of what can be proposed and designed by one person.
 
@@ -28,17 +28,17 @@ But first, some goals for this RFC:
 - Rust Issue: [rust-lang/rust#0000](https://github.com/rust-lang/rust/issues/0000)
 
 # Summary
+
 [summary]: #summary
 
-This RFC introduces *named arguments* for Rust. Named arguments are the ability to call a function
+This RFC introduces _named arguments_ for Rust. Named arguments are the ability to call a function
 or method while precising the name of the arguments, greatly improving clarity in many situations.
 Of course function where the argument is already clear do not have to use them: `sin(x: x)` would be
 ridiculous and redundant. Named arguments as proposed here are **not** source-breaking: existing
-functions and methods will continue to work without any change. Named arguments as proposed here
-are **opt-in**. Changing the name of `f(a: usize)` to `f(b: usize)` will **not** be a breaking
-change, just like it is not today: once again, the goal is not to force them on developers but to
-provide another option in Rust that has seen huge success in other languages in a way that fit with
-Rust safety guarantees.
+functions and methods will continue to work without any change. Named arguments as proposed here are
+**opt-in**. Changing the name of `f(a: usize)` to `f(b: usize)` will **not** be a breaking change,
+just like it is not today: once again, the goal is not to force them on developers but to provide
+another option in Rust that has seen huge success in other languages in a way that fit with Rust.
 
 An example in `Python` for clarity:
 

@@ -1,4 +1,5 @@
 # Drawbacks
+
 [drawbacks]: #drawbacks
 
-Why should we *not* do this?
+Why should we _not_ do this?

@@ -1,8 +1,9 @@
 # Motivation
+
 [motivation]: #motivation
 
-The main point of this section is that named arguments make for harder to misuse
-interfaces through clarity and simplicity of both declaration and usage.
+The main point of this section is that named arguments make for harder to misuse interfaces through
+clarity and simplicity of both declaration and usage.
 
 - Named arguments increase readability.
 
@@ -19,19 +20,21 @@ my_vec.insert(elem: 2, at: 3)
 
 - Named arguments are self documenting.
 
-In the example code above it is easy for a developer to remember which argument does what simply
+In the example code above it is not easy for a developer to remember which argument does what simply
 by looking at the method call, without having to write a little toy example or look at the
-documentation for the type (or the trait). Autocompletion can help by providing the names and filling
-them in advance, meaning no more typing for most people, just clearer code. Code is also read more
-than it is written, the clearer it is, the less mistakes slip through reviews.
+documentation for the type (or the trait). Most of the time Rust helps by asking for differents
+types in its parameters, but that fails when the type _is_ the same. Autocompletion can help by
+providing the names and filling them in advance, meaning no more typing for most people, just
+clearer code. Code is also read more than it is written, the clearer it is, the less mistakes slip
+through reviews.
 
 - Named arguments are simple to **create** compared to the other options.
 
 In all languages that have them, named arguments are simple to create: they do not require a new
 type and they do not require a builder pattern (and so another type). This does not means that
-builder patterns or new types are useless: I argue that the use cases are simply not the same.
-Named arguments should be used to clarify function calls, **not** write functions and methods
-with 13 parameters, 7 of which are optional: a builder would be more useful in this situation.
+builder patterns or new types are useless: I argue that the use cases are simply not the same. Named
+arguments should be used to clarify function calls, **not** write functions and methods with 13
+parameters, 7 of which are named: a builder would be more useful in this situation.
 
 - Named arguments are simple to **use** compared to the other options.
 
@@ -70,8 +73,8 @@ Instead of looking at how code could be written in carefully crafted APIs, we sh
 code is being written in reality. Programmers don't always have time to rack their brains over how
 to create the most beautiful API. They want to get things done.
 
-Named arguments allow iterating quickly without sacrificing readability, because they are dead simple.
-There's no need to create new types or make up long function names.
+Named arguments allow iterating quickly without sacrificing readability, because they are dead
+simple. There's no need to create new types or make up long function names.
 
 As an example: the (amazing) `cargo` tool [would have a use for named arguments][cargo-named-args]:
 
@@ -101,10 +104,13 @@ compile_opts.filter = ops::CompileFilter::new(
 ); // also, specify --doc to run doc tests filtered
 ```
 
+Note that in the example above, Rust type system cannot help: the last four arguments are all of the
+same type.
+
 - Improve soundness and safety.
 
-The documentation for [`Vec::reserve_exact`](https://doc.rust-lang.org/std/vec/struct.Vec.html#method.reserve_exact)
-shows clearly the parameter is for *additional* capacity. But is it always clear in code ?
+The documentation for [`Vec::reserve_exact`][vec-reserve-exact] shows clearly the parameter is for
+_additional_ capacity. But is it always clear in code ?
 
 ```rust
 let mut vec = vec![1];
@@ -117,10 +123,10 @@ An argument against named argument is that hints like those provided by Rust-Ana
 those cases. This is true, but they are not always available. They can be disabled, reviewing a PR
 through a web interface does not have them, reading code on Github will not show them, maybe your
 coworker does not like them, there are many reasons for them not to appear. Named arguments are part
-of the code, they always appear when intended to. Just like types, they help by adding another
-layer of clarity to code, which helps with soundness and safety, and just like types can be inferred
-when writing `let a = b + c`, named arguments as proposed here are not mandatory: forcing `sin(x: x)`
-is **not** improving anything.
+of the code, they always appear when intended to. Just like types, they help by adding another layer
+of clarity to code, which helps with soundness and safety, and just like types can be inferred when
+writing `let a = b + c`, named arguments as proposed here are not mandatory: forcing `sin(x: x)` is
+**not** improving anything.
 
 - Improve coherence in the language.
 
@@ -129,8 +135,10 @@ arguments for functions can be seen as an extension of that capability.
 
 The previous paragraph opens an argument against: `Wrapper(x)` does not have named arguments and it
 is quite clear. I would argue this is completely and utterly false: the argument name **is** the
-name of the type itself. Wrapper types are here to increase clarity and provide additional guarantees
-through the type system, and they do so by being explicit (`NonZeroUsize` and friends are wrapper
-types that make their usage clear through their name for example).
+name of the type itself. Wrapper types are here to increase clarity and provide additional
+guarantees through the type system, and they do so by being explicit (`NonZeroUsize` and friends are
+wrapper types that make their usage clear through their name for example).
 
-[cargo-named-args]: https://github.com/rust-lang/cargo/blob/b842849732f89df8675eb2d933c384d6338e4466/src/bin/cargo/commands/test.rs#L107-L113
+[cargo-named-args]:
+  https://github.com/rust-lang/cargo/blob/b842849732f89df8675eb2d933c384d6338e4466/src/bin/cargo/commands/test.rs#L107-L113
+[vec-reserve-exact]: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.reserve_exact
