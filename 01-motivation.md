@@ -139,6 +139,11 @@ name of the type itself. Wrapper types are here to increase clarity and provide 
 guarantees through the type system, and they do so by being explicit (`NonZeroUsize` and friends are
 wrapper types that make their usage clear through their name for example).
 
+- Allow for a form of function overloading that is clearly visible.
+
+This would allow reusing short function names while adapting them to context or similar
+capabilities. See the example in the guide-level explanation for details.
+
 [cargo-named-args]:
   https://github.com/rust-lang/cargo/blob/b842849732f89df8675eb2d933c384d6338e4466/src/bin/cargo/commands/test.rs#L107-L113
 [vec-reserve-exact]: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.reserve_exact

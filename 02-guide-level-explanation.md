@@ -31,7 +31,7 @@ other details.
 There are two way to mark an argument as _named_ when declaring a function (or method):
 
 - With the `pub` keyword (only when the binding is **not** a pattern).
-- With another identifier.
+- With another identifier (that **cannot** be a pattern itself).
 
 The following example presents both methods in their simplest form. Further examples will explain
 how edge cases are handled.
@@ -121,6 +121,8 @@ If _both_ `ref` and `mut` are present, they use the same order as today: `ref mu
 ### When using a pattern
 
 - `pub` **cannot** be used here since there is no identifier for it to expose.
+- The identifier **cannot** be a pattern. Its only use is as a public facing name, it does not
+  destructure anything nor can be used as a binding inside the function.
 - The identifier is placed before the pattern as shown in the example below:
 
 ```rust
@@ -208,6 +210,71 @@ expression.
 
 ## Other points
 
+### Using named argumnts with `trait`s
+
+Named arguments are fully usable in `trait`s and types implementing those must respect the _public_
+facing name of the argument, the private one can be modified:
+
+```rust
+trait Connection {
+    fn connect(&mut self, pub port: usize);
+}
+
+struct Dummy;
+
+impl Connection for Dummy {
+    fn connect(&mut self, port _: usize) {
+    //                    ^^^^   Public name is the same
+    //                         ^ Name has been changed internally
+    }
+}
+
+fn create_conn<T: Connection>(t: &mut T) {
+    t.connect(port: 443)
+    //        ^^^^ Public name declared by trait is used in call.
+}
+```
+
+### Overloading a function's name with named arguments
+
+Named arguments also introduce a limited form a function overloading that is easy to check for both
+a human and the compiler and can be applied to profit plainly from heavily used function names like
+`new`. This overloading is based on both the function's name and the public names of all the named
+arguments, ensuring two overloaded functions side by side cannot be mistaken for one another: the
+information is always present, even when reading code without tooling to show type and name hints.
+
+In the example below, calling `my_result.ok()` and `my_result.ok(or: default_value)` would call two
+different functions. The third function would be banned because it uses the same public name as the
+second one.
+
+```rust
+impl<T, E> Result<T, E> {
+    pub fn ok(self) -> Option<T> {
+        match self {
+            Ok(t) => Some(t),
+            Err(e) => None,
+        }
+    }
+
+    pub fn ok(self, or fallback: T) -> T {
+        match self {
+            Ok(t) => t,
+            Err(_) => fallback,
+        }
+    }
+
+    // ERROR
+    pub fn ok<U>(self, or replacement: U) -> T where U: Into<T> {
+    //     ^^----------^^----------------
+    //     A function using this name and this named argument already exists.
+        match self {
+            Ok(t) => t,
+            Err(_) => replacement.into(),
+        }
+    }
+}
+```
+
 ### Can I mix named and unnamed arguments ?
 
 **Yes**, without any restrictions (beside the one on `self` in methods):
@@ -223,7 +290,29 @@ fn mix_and_match(pub named: usize, unnamed: usize, public hidden: usize) { /* ..
 ### Can I reorder named arguments when calling ?
 
 **No**. Just like unnamed arguments, named arguments are also position-based and cannot be reordered
-when calling: `register(name:, surname:)` cannot be called as `register(surname:, name:)`.
+when calling: `register(name:surname:)` cannot be called as `register(surname:name:)`.
 
 Reordering them at the definition site is an API break, just like reordering unnamed arguments is an
 API break already.
+
+### Documenting named arguments
+
+Talking about functions using named argument would use `register(name:surname:)`, not just
+`register()`. This would allow differentiating overloads clearly.
+
+`rustdoc` shows the internal name of arguments already when generating documentation for Rust code.
+While leaky, this is very useful to understand some parameters and have names to refer to in textual
+documentation, like for [`f32::mul_add`][mul-add], and removing it to instead show only named
+arguments would be very detrimental to the user experience.
+
+The proposed change is the following:
+
+- Insert the keyword `pub` before arguments that are public and declared with `pub`:
+  `fn register(pub name: String)`.
+- Insert both the public and private name for arguments that use an identifier:
+  `fn opposite(&self, centered_on _: Self) -> Self`. This is taken from how Swift
+  [does it](https://swiftdoc.org/v5.1/type/bool/).
+- Keep the behavior of showing `_` when a pattern was used as the argument (like above).
+- Keep hiding `mut` and `ref` like currently done.
+
+[mul-add]: https://doc.rust-lang.org/stable/std/primitive.f32.html#method.mul_add
