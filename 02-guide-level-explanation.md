@@ -23,13 +23,14 @@ its impact in concrete terms.
 This section will explain how to declare and use named arguments as a teacher may explain
 mathematics: it will present the concepts while abstracting away much of the reasoning, which is
 detailed more thouroughly in other sections (see [Reference-level
-explanation][reference-level-explanation])
+explanation][reference-level-explanation]). It is divided into three parts: declaring, calling and
+other details.
 
-## How do I declare a function with named arguments ?
+## Declaring a function using named arguments
 
 There are two way to mark an argument as _named_ when declaring a function (or method):
 
-- With the `pub` keyword.
+- With the `pub` keyword (only when the binding is **not** a pattern).
 - With another identifier.
 
 The following example presents both methods in their simplest form. Further examples will explain
@@ -55,7 +56,9 @@ The `to db: Database` part marks the binding `to` as public and the binding `db`
 must be used when calling the function and cannot be used inside its definition. `db` is in the
 opposite situation: it cannot be used outside the function's definition.
 
-### What about `self` ?
+### Declaring closures with named arguments
+
+### When using `self`
 
 The previous example works but it's contrived and not very idiomatic. It could instead be rewritten
 like this:
@@ -98,13 +101,74 @@ mod Database {
 
 This can then be called as:
 `Database::register(into: my_db, name: "Alexis".into(), surname: "Poliorcetics".into())` but I
-cannot think of a situation where this is preferable to an `impl` block and a singleton pattern.
+cannot think of a situation where this is preferable to an `impl` block and a singleton pattern
+using some `lazy_static` or `once_cell`.
+
+### When using `mut` or `ref`
+
+`mut` cannot be an identifier for an argument but it can be used by a function to avoid a
+`let mut arg = arg;` inside. This capability does not go away with named arguments.
+
+- When using `pub`; `mut` is placed after it to follow the current syntax of Rust where the
+  visibility is always first: `fn register(pub mut name: String)`.
+- When using an identifier, `mut` comes first: `fn new_db(mut named name: String) -> Database`.
+
+The exact same rules apply for `ref`.
+
+If _both_ `ref` and `mut` are present, they use the same order as today: `ref mut`, and with `pub`:
+`pub ref mut`.
+
+### When using a pattern
+
+- `pub` **cannot** be used here since there is no identifier for it to expose.
+- The identifier is placed before the pattern as shown in the example below:
+
+```rust
+struct Point { x: f32, y: f32 }
+
+impl Point {
+    fn opposite(&self, centered_on Self { x, y }: Self) -> Self {
+        Self {
+            x: 2.0 * x - self.x,
+            y: 2.0 * y - self.y,
+        }
+    }
+}
+```
+
+### Combining patterns and `mut`/`ref`
+
+This has the same behavior as current Rust: it is impossible to mark all the bindings in a pattern
+as mutable at once:
+
+```rust
+// ERROR
+impl Point {
+    fn opposite(&self, mut Self { x, y }: Self) -> Self {
+    //                 ^^^ does not compile
+        Self {
+            x: 2.0 * x - self.x,
+            y: 2.0 * y - self.y,
+        }
+    }
+}
+
+// OK
+impl Point {
+    fn opposite(&self, Self { mut x, y }: Self) -> Self {
+        Self {
+            x: 2.0 * x - self.x,
+            y: 2.0 * y - self.y,
+        }
+    }
+}
+```
 
 ### Can I use `pub(something)` ?
 
-**No**, named arguments are always as public as the function they belong to. They must be used
-anytime the function is called so it is not possible to limit them to an arbitrary scope that is
-different from the function's.
+**No**, named arguments always have the exact same visibility as the function they belong to. They
+must be used anytime the function is called so it is not possible to limit them to an arbitrary
+scope that is different from the function's.
 
 ### Why use `pub` and not just write the identifier twice ?
 
@@ -120,7 +184,7 @@ that one name is public and the other is private. Using the first as the public 
 logical: it is in the position of the `pub` keyword, taking advantage of the similar placement with
 a similar functionnality, which is important for consistency.
 
-## How do I use a function with named arguments ?
+## Calling a function with named arguments
 
 This has been hinted at in the previous subsection, so here is the syntax, using the same examples
 as before:
@@ -140,7 +204,11 @@ Functions and methods are called as usual, the parameters can be any expression 
 resolves to the correct type for the argument, but there is the identifier and a `:` before said
 expression.
 
-## Can I mix named and unnamed arguments ?
+### Calling a closure with named arguments
+
+## Other points
+
+### Can I mix named and unnamed arguments ?
 
 **Yes**, without any restrictions (beside the one on `self` in methods):
 
@@ -152,12 +220,10 @@ my_vec.insert(2, at: 3)
 fn mix_and_match(pub named: usize, unnamed: usize, public hidden: usize) { /* ... */ }
 ```
 
-## Can I reorder named arguments ?
+### Can I reorder named arguments when calling ?
 
 **No**. Just like unnamed arguments, named arguments are also position-based and cannot be reordered
 when calling: `register(name:, surname:)` cannot be called as `register(surname:, name:)`.
 
 Reordering them at the definition site is an API break, just like reordering unnamed arguments is an
 API break already.
-
-## How do named arguments interacts with closures ?
