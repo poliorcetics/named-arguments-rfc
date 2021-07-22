@@ -8,6 +8,17 @@
 
 ## Alternatives
 
+## Always use `pub`
+
+In the Guide Level explanation, is it said:
+
+> Using `fn register(pub to db: Database)` is an error.
+
+It can be argued that always using `pub` even when an alternate identifier is provided is both
+easier for the compiler and clearer for readers of the function. This has not been kept to avoid
+_too much informations_ in function's declaration. If people feel it would be clearer, that can
+certainly be changed.
+
 ### Anonymous types (Structural Records) and type deduction
 
 ```rust
