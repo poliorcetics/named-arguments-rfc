@@ -82,7 +82,7 @@ As an example: the (amazing) `cargo` tool [would have a use for named arguments]
 // Code in cargo
 
 compile_opts.filter = ops::CompileFilter::new(
-    LibRule::Default,   // compile the library, so the unit tests can be run filtered
+    LibRule::Default, // compile the library, so the unit tests can be run filtered
     FilterRule::All, // compile the binaries, so the unit tests in binaries can be run filtered
     FilterRule::All, // compile the tests, so the integration tests can be run filtered
     FilterRule::none(), // specify --examples to unit test binaries filtered
@@ -119,6 +119,10 @@ let mut vec = vec![1];
 vec.reserve_exact(10);
 ```
 
+It is the same for [`f64::atan2`][f64-atan2]: is the parameter `x` or `y` when calling
+`orig.atan2(angle)` ? Here `rust-analyzer` cannot even help since the internal parameter name is
+`other`. The only way to know is documentation.
+
 An argument against named argument is that hints like those provided by Rust-Analyzer are here for
 those cases. This is true, but they are not always available. They can be disabled, reviewing a PR
 through a web interface does not have them, reading code on Github will not show them, maybe your
@@ -147,3 +151,4 @@ capabilities. See the example in the guide-level explanation for details.
 [cargo-named-args]:
   https://github.com/rust-lang/cargo/blob/b842849732f89df8675eb2d933c384d6338e4466/src/bin/cargo/commands/test.rs#L107-L113
 [vec-reserve-exact]: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.reserve_exact
+[f64-atan2]: https://doc.rust-lang.org/stable/std/primitive.f64.html#method.atan2

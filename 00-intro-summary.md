@@ -8,7 +8,7 @@ But first, some goals for this RFC:
 
 - The solution **must** be backward compatible so that it can be backported to Rust Edition 2015,
   2018 and 2021. Even if a backport is not wanted, having it has a goal means this RFC should not
-  conflict with existing features in one edition but not in another.
+  conflict with features existing in one edition but not in another.
 - The solution should improve readability/usability without requiring new keywords or much in the
   way of typing (so that programmers can use them without having to write a line and a half just for
   some non-critical feature).
@@ -32,12 +32,12 @@ But first, some goals for this RFC:
 
 This RFC introduces _named arguments_ for Rust. Named arguments are the ability to call a function
 or method while precising the name of the arguments, greatly improving clarity in many situations.
-Of course function where the argument is already clear do not have to use them: `sin(x: x)` would be
-ridiculous and redundant. Named arguments as proposed here are **not** source-breaking: existing
+Of course functions where the argument is already clear do not have to use them: `sin(x: x)` would
+be ridiculous and redundant. Named arguments as proposed here are **not** source-breaking: existing
 functions and methods will continue to work without any change. Named arguments as proposed here are
 **opt-in**. Changing the name of `f(a: usize)` to `f(b: usize)` will **not** be a breaking change,
 just like it is not today: once again, the goal is not to force them on developers but to provide
-another option in Rust that has seen huge success in other languages in a way that fit with Rust.
+another option that has seen huge success in other languages in a way that fit with Rust.
 
 Named arguments also introduce a limited form a function overloading that is easy to check for both
 a human and the compiler and can be applied to profit plainly from heavily used function names like
