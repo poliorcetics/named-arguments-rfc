@@ -56,12 +56,20 @@ The `to db: Database` part marks the binding `to` as public and the binding `db`
 must be used when calling the function and cannot be used inside its definition. `db` is in the
 opposite situation: it cannot be used outside the function's definition.
 
+Using `fn register(pub to db: Database)` is an error.
+
+Using `fn register(pub(in path) name: String)` is an error: named arguments always have the exact
+same visibility as the function they belong to. They must be used anytime the function is called so
+it is not possible to limit them to an arbitrary scope that is different from the function's.
+
 ### Declaring closures with named arguments
+
+TODO
 
 ### When using `self`
 
-The previous example works but it's contrived and not very idiomatic. It could instead be rewritten
-like this:
+The previous example about `register` works but it's contrived and not very idiomatic. It could
+instead be rewritten like this:
 
 ```rust
 pub struct Database;
@@ -81,28 +89,6 @@ clear as possible: either done through
 marking the called function and the caller or through the qualified syntax in which the type (or
 trait) cannot be omitted:
 `Database::register(my_db, name: "Alexis".into(), surname: "Poliorcetics".into())`.
-
-It is possible to create module named `Database` and write a `register` function in it like this:
-
-```rust
-mod Database {
-    pub struct Database;
-    pub struct RegistrationError;
-
-    pub fn register(
-        into db: Database
-        pub name: String,
-        pub surname: String,
-    ) -> Result<(), RegistrationError> {
-        /* ... */
-    }
-}
-```
-
-This can then be called as:
-`Database::register(into: my_db, name: "Alexis".into(), surname: "Poliorcetics".into())` but I
-cannot think of a situation where this is preferable to an `impl` block and a singleton pattern
-using some `lazy_static` or `once_cell`.
 
 ### When using `mut` or `ref`
 
@@ -146,7 +132,7 @@ as mutable at once:
 ```rust
 // ERROR
 impl Point {
-    fn opposite(&self, mut Self { x, y }: Self) -> Self {
+    fn opposite(&self, mut centered_on Self { x, y }: Self) -> Self {
     //                 ^^^ does not compile
         Self {
             x: 2.0 * x - self.x,
@@ -157,7 +143,7 @@ impl Point {
 
 // OK
 impl Point {
-    fn opposite(&self, Self { mut x, y }: Self) -> Self {
+    fn opposite(&self, centered_on Self { mut x, y }: Self) -> Self {
         Self {
             x: 2.0 * x - self.x,
             y: 2.0 * y - self.y,
@@ -165,26 +151,6 @@ impl Point {
     }
 }
 ```
-
-### Can I use `pub(something)` ?
-
-**No**, named arguments always have the exact same visibility as the function they belong to. They
-must be used anytime the function is called so it is not possible to limit them to an arbitrary
-scope that is different from the function's.
-
-### Why use `pub` and not just write the identifier twice ?
-
-`fn register(name name: String)` certainly works and is not banned but it is rather redundant and
-raises a question: did the function writer intend to write `pub` or use a different name and simply
-forgot ? Marking such cases as `pub` makes the original intent clear and reminds the developer that
-modifying the name is an API break.
-
-`pub` is not asked for when the two bindings are differents because the situation makes it clear
-already: two identifiers cannot be placed that way next to each other without an operator or a comma
-anywhere else in normal Rust (it can happen in macros though). Therefore the only possible case is
-that one name is public and the other is private. Using the first as the public name is then
-logical: it is in the position of the `pub` keyword, taking advantage of the similar placement with
-a similar functionnality, which is important for consistency.
 
 ## Calling a function with named arguments
 
@@ -208,9 +174,11 @@ expression.
 
 ### Calling a closure with named arguments
 
+TODO
+
 ## Other points
 
-### Using named argumnts with `trait`s
+### Using named arguments with `trait`s
 
 Named arguments are fully usable in `trait`s and types implementing those must respect the _public_
 facing name of the argument, the private one can be modified:
@@ -238,7 +206,7 @@ fn create_conn<T: Connection>(t: &mut T) {
 ### Overloading a function's name with named arguments
 
 Named arguments also introduce a limited form a function overloading that is easy to check for both
-a human and the compiler and can be applied to profit plainly from heavily used function names like
+a human and the compiler and can be applied to profit fully from heavily used function names like
 `new`. This overloading is based on both the function's name and the public names of all the named
 arguments, ensuring two overloaded functions side by side cannot be mistaken for one another: the
 information is always present, even when reading code without tooling to show type and name hints.
