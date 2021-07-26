@@ -215,3 +215,13 @@ nits that make using closures with named arguments a little strange sometimes.
 
 As such, closures and named arguments will be discussed later, in the [Unresolved
 Questions][unresolved-questions] section.
+
+## Interaction with `#[no_mangle]`
+
+Such functions would be forbidden from using named arguments _if_ they are overloaded based on them.
+If they are not, the function could be uniquely identified by just its name even for FFI, which is
+the point of this attribute.
+
+## Interaction with `extern "C"` (or anything but the unstable Rust ABI)
+
+This uses the sames rules as `#[no_mangle]`.
