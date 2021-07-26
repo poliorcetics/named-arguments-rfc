@@ -1,5 +1,9 @@
+#!/usr/bin/env sh
+
 # Simple script to mash the different markdown files together and
 # produce the single document necessary for the RFC PR.
+
+set -Eeuo pipefail
 
 RFC_FILE="0000-named-arguments-rfc.md"
 
