@@ -20,6 +20,11 @@ its impact in concrete terms.
 
 ---
 
+Named arguments are the ability to call a function, method or closure while precising the
+caller-facing name of the arguments, greatly improving clarity in many situations. Of course
+functions where the arguments are already clear do not have to use them: `sin(x: x)` would be
+ridiculous and redundant.
+
 This section will explain how to declare and use named arguments as a teacher may explain
 mathematics: it will present the concepts while abstracting away much of the reasoning, which is
 detailed more thouroughly in other sections (see [Reference-level
@@ -64,7 +69,25 @@ it is not possible to limit them to an arbitrary scope that is different from th
 
 ### Declaring closures with named arguments
 
-TODO
+Just like regular function, it is possible to declare closures with named arguments:
+
+```rust
+pub struct Point { x: f32, y: f32 }
+
+impl Point {
+    // Using `Fn` form
+    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+        f(add: self.x, mul: self.y)
+    }
+}
+
+// Using closure form
+let closure = |pub add, other arg| { (add + 42.0, arg * 42.0) };
+```
+
+Just like functions:
+
+- `add`, `arg` must be used inside the function when declared, `other` is not available.
 
 ### When using `self`
 
@@ -172,9 +195,63 @@ Functions and methods are called as usual, the parameters can be any expression 
 resolves to the correct type for the argument, but there is the identifier and a `:` before said
 expression.
 
-### Calling a closure with named arguments
+### Calling a function with named arguments indirectly
 
-TODO
+All examples until now have always called the function (or closure) directly, but Rust also allows
+us to pass functions and closures as arguments. Below is how named arguments behave in such a case:
+
+```rust
+pub struct Point { x: f32, y: f32 }
+
+impl Point {
+    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+        f(add: self.x, mul: self.y)
+    }
+}
+
+let closure = |pub add, other arg| { (add + 42.0, arg * 42.0) };
+
+fn twos(x: f32, y: f32) -> (f32, f32) {
+    (x + 2.0, y * 2.0)
+}
+
+fn twos(pub x: f32, y: f32) -> (f32, f32) {
+    (y + 2.0, x * 2.0) // inverted x & y
+}
+
+// Long versions, always valid, exact match for function signature
+some_point.strange_operation(|pub add, pub mul| closure(add: add, other: mul))
+some_point.strange_operation(|pub add, pub mul| twos(add, mul))
+some_point.strange_operation(|pub add, pub mul| twos(x: add, mul))
+
+// No need for exact match though since each closure is unique here
+some_point.strange_operation(|add, mul| closure(add: add, other: mul))
+some_point.strange_operation(|add, mul| twos(add, mul))
+some_point.strange_operation(|add, mul| twos(x: add, mul))
+
+// Disambiguation version
+some_point.strange_operation(twos(_:_:))
+some_point.strange_operation(twos(x:_:))
+
+// No need for disambiguation here, only one `closure` exists
+some_point.strange_operation(closure)
+```
+
+Note that if overloading brings two versions with a different number of parameters, it is still
+necessary to be explicit about which function is passed, to ensure clarity for readers:
+
+```rust
+fn twos(x: f32, y: f32) -> (f32, f32) {
+    (x + 2.0, y * 2.0)
+}
+
+fn twos(x: f32) -> (f32, f32) {
+    (x + 2.0, x * 2.0)
+}
+
+some_point.strange_operation(twos(_:_:)) // OK
+some_point.strange_operation(twos) // ERROR, even if unambiguous
+```
 
 ## Other points
 
@@ -265,15 +342,17 @@ API break already.
 
 ### Documenting named arguments
 
-Talking about functions using named argument would use `register(name:surname:)`, not just
-`register()`. This would allow differentiating overloads clearly.
+Talking about functions using named argument uses `register(name:surname:)`, not just `register()`.
+This allows differentiating overloads clearly and make it easier to remember named arguments are
+used for the function. Cases where one argument is public and the other is not are written as
+`register(_:surname:)`
 
 `rustdoc` shows the internal name of arguments already when generating documentation for Rust code.
 While leaky, this is very useful to understand some parameters and have names to refer to in textual
 documentation, like for [`f32::mul_add`][mul-add], and removing it to instead show only named
 arguments would be very detrimental to the user experience.
 
-The proposed change is the following:
+Instead `rustdoc` behaves as such:
 
 - Insert the keyword `pub` before arguments that are public and declared with `pub`:
   `fn register(pub name: String)`.
@@ -282,5 +361,6 @@ The proposed change is the following:
   [does it](https://swiftdoc.org/v5.1/type/bool/).
 - Keep the behavior of showing `_` when a pattern was used as the argument (like above).
 - Keep hiding `mut` and `ref` like currently done.
+- Allow intradoc-links using `[link](register(_:surname:))` to differentiate overloads.
 
 [mul-add]: https://doc.rust-lang.org/stable/std/primitive.f32.html#method.mul_add
