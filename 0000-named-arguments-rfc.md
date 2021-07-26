@@ -414,7 +414,7 @@ expression.
 All examples until now have always called the function (or closure) directly, but Rust also allows
 us to pass functions and closures as arguments. Below is how named arguments behave in such a case:
 
-````rust
+```rust
 pub struct Point { x: f32, y: f32 }
 
 impl Point {
@@ -433,16 +433,39 @@ fn twos(pub x: f32, y: f32) -> (f32, f32) {
     (y + 2.0, x * 2.0) // inverted x & y
 }
 
-// Long versions, always valid
+// Long versions, always valid, exact match for function signature
 some_point.strange_operation(|pub add, pub mul| closure(add: add, other: mul))
 some_point.strange_operation(|pub add, pub mul| twos(add, mul))
 some_point.strange_operation(|pub add, pub mul| twos(x: add, mul))
 
+// No need for exact match though since each closure is unique here
+some_point.strange_operation(|add, mul| closure(add: add, other: mul))
+some_point.strange_operation(|add, mul| twos(add, mul))
+some_point.strange_operation(|add, mul| twos(x: add, mul))
+
 // Disambiguation version
 some_point.strange_operation(twos(_:_:))
 some_point.strange_operation(twos(x:_:))
+
+// No need for disambiguation here, only one `closure` exists
+some_point.strange_operation(closure)
 ```
 
+Note that if overloading brings two versions with a different number of parameters, it is still
+necessary to be explicit about which function is passed, to ensure clarity for readers:
+
+```rust
+fn twos(x: f32, y: f32) -> (f32, f32) {
+    (x + 2.0, y * 2.0)
+}
+
+fn twos(x: f32) -> (f32, f32) {
+    (x + 2.0, x * 2.0)
+}
+
+some_point.strange_operation(twos(_:_:)) // OK
+some_point.strange_operation(twos) // ERROR, even if unambiguous
+```
 
 ## Other points
 
@@ -469,7 +492,7 @@ fn create_conn<T: Connection>(t: &mut T) {
     t.connect(port: 443)
     //        ^^^^ Public name declared by trait is used in call.
 }
-````
+```
 
 ### Overloading a function's name with named arguments
 
@@ -780,6 +803,10 @@ Such functions would be forbidden from using named arguments _if_ they are overl
 If they are not, the function could be uniquely identified by just its name even for FFI, which is
 the point of this attribute.
 
+## Interaction with `extern "C"` (or anything but the unstable Rust ABI)
+
+This uses the sames rules as `#[no_mangle]`.
+
 # Drawbacks
 
 [drawbacks]: #drawbacks
@@ -792,11 +819,18 @@ Enforcing named arguments in closure without implicit casting would very heavy f
 force the following:
 
 ```rust
+// One unnamed argument must be passed
+fn take_closure_with_param<T>(f: Fn(T)) { /* ... */ }
+
 let cls = |param1| some_other_function(public_name: param1);
 take_closure_with_param(cls);
+
+// OR
+
+take_closure_with_param(|param1| some_other_function(public_name: param1));
 ```
 
-Instead of:
+Instead of the concise:
 
 ```rust
 take_closure_with_param(some_other_function);
@@ -807,7 +841,7 @@ casting argument names is wrong. I believe a more nuanced approach, through a li
 which would allow people to choose whether to enforce explicitness or not, just like the
 `unsafe_op_in_unsafe_fn` lint does.
 
-It must be noted this would always stay possible:
+It must be noted this would always stay possible and could again be linted for:
 
 ```rust
 take_closure_with_param(some_other_function(public_name:));
