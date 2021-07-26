@@ -6,6 +6,24 @@ language.
 It will be used as long as the RFC PR for it has not been made. After that, the modifications will
 happen directly on the PR.
 
+## Main RFC file
+
+The file `0000-named-arguments-rfc.md` is not intended for writing, it will be updated in a
+pre-commit hook on each commit (use the following hook in `.git/hook/pre-commit`):
+
+```sh
+#!/usr/bin/env sh
+
+set -Eeuo pipefail
+
+source produce_full_rfc.sh
+
+git add "$RFC_FILE"
+```
+
+Even if the update date you see for the file is long ago, you can check: if the commit hook is
+active, it will have been updated.
+
 ## Some goals for the RFC
 
 - The solution **must** be backward compatible so that it can be backported to Rust Edition 2015,
