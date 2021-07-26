@@ -10,7 +10,7 @@
 
 ## Always use `pub`
 
-In the Guide Level explanation, is it said:
+In the Guide Level Explanation, is it said:
 
 > Using `fn register(pub to db: Database)` is an error.
 
@@ -18,6 +18,41 @@ It can be argued that always using `pub` even when an alternate identifier is pr
 easier for the compiler and clearer for readers of the function. This has not been kept to avoid
 _too much informations_ in function's declaration. If people feel it would be clearer, that can
 certainly be changed.
+
+We should not allow both though, it would be redundant and would probably confuse people used to one
+syntax but not the other.
+
+## Enforce named arguments for closures
+
+Enforcing named arguments in closure without implicit casting would very heavy for users: it would
+force the following:
+
+```rust
+fn take_closure_with_param<T>(f: Fn(T)) { /* ... */ }
+
+let cls = |param1| some_other_function(public_name: param1);
+take_closure_with_param(cls);
+
+// Or
+take_closure_with_param(|param1| some_other_function(public_name: param1));
+```
+
+Instead of:
+
+```rust
+take_closure_with_param(some_other_function);
+```
+
+That point can be argued for and against though, and it can rightly be argued that implicitly
+casting argument names is wrong. I believe a more nuanced approach, through a lint, could be taken,
+which would allow people to choose whether to enforce explicitness or not, just like the
+`unsafe_op_in_unsafe_fn` lint does.
+
+It must be noted this would always stay possible:
+
+```rust
+take_closure_with_param(some_other_function(public_name:));
+```
 
 ### Anonymous types (Structural Records) and type deduction
 
