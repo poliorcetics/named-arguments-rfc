@@ -855,6 +855,17 @@ take_closure_with_param(some_other_function(public_name:));
 - What other designs have been considered and what is the rationale for not choosing them?
 - What is the impact of not doing this?
 
+## Rationale
+
+There have been several choices made in this RFC that need justification. In no particular order:
+
+- Using `:`
+- Using `pub` only sometimes
+- Allowing overloading through named arguments
+- Not allowing keywords in the public name (`for`, `in`, `as` especially)
+
+TODO: explain choices
+
 ## Alternatives
 
 ## Always use `pub`
@@ -1053,6 +1064,82 @@ trait Database: Restriction<Inner = u32> {}
 fn one_string_to_bind_them_all<I: Iter<Item = String>>(i: I) -> String { /* ... */ }
                                     // ^^^^ This is another
 ```
+
+### Overloading already exists in Rust
+
+TODO: complete this
+
+There are two main ways to overload in Rust.
+
+The first is with members and methods:
+
+```rust
+struct Sizes { data: Vec<usize> }
+
+impl Sizes {
+    fn data(&self) -> &Vec<usize> { &self.data }
+}
+
+let data_1:  Vec<usize> = some_sizes_1.data;
+let data_2: &Vec<usize> = some_sizes_2.data();
+```
+
+The second is with modules (and crates, since they behave as modules for this):
+
+```rust
+mod a { pub fn data() -> usize { 42 } }
+
+mod b { pub fn data() -> &'static str { "42" } }
+
+let from_a: usize        = a::data();
+let from_b: &'static str = b::data();
+```
+
+This one can even be argued as reverse form of named arguments: the function name is the same and a
+marker (here the module's name) is used to differentiate.
+
+There is a third one that is nightly-only for now (taken from [this blog post](nightly-overload)):
+
+```rust
+// required to implement a function with `extern "rust-call"`
+#![feature(unboxed_closures)]
+#![feature(fn_traits)]
+
+struct Multiply;
+
+#[allow(non_upper_case_globals)]
+const multiply: Multiply = Multiply;
+
+impl FnOnce<(u32, u32)> for Multiply {
+    type Output = u32;
+    extern "rust-call" fn call_once(self, a: (u32, u32)) -> Self::Output {
+        a.0 * a.1
+    }
+}
+
+impl FnOnce<(u32, u32, u32)> for Multiply {
+    type Output = u32;
+    extern "rust-call" fn call_once(self, a: (u32, u32, u32)) -> Self::Output {
+        a.0 * a.1 * a.2
+    }
+}
+
+impl FnOnce<(&str, usize)> for Multiply {
+    type Output = String;
+    extern "rust-call" fn call_once(self, a: (&str, usize)) -> Self::Output {
+        a.0.repeat(a.1)
+    }
+}
+
+fn main() {
+    assert_eq!(multiply(2, 3), 6);
+    assert_eq!(multiply(2, 3, 4), 24);
+    assert_eq!(multiply("hello ", 3), "hello hello hello ");
+}
+```
+
+[nightly-overload]:
+  https://lazy.codes/posts/awesome-unstable-rust-features/#fn-traits-and-unboxed-closures
 
 ## What about other programming languages ?
 

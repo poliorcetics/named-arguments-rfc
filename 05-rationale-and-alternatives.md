@@ -6,6 +6,17 @@
 - What other designs have been considered and what is the rationale for not choosing them?
 - What is the impact of not doing this?
 
+## Rationale
+
+There have been several choices made in this RFC that need justification. In no particular order:
+
+- Using `:`
+- Using `pub` only sometimes
+- Allowing overloading through named arguments
+- Not allowing keywords in the public name (`for`, `in`, `as` especially)
+
+TODO: explain choices
+
 ## Alternatives
 
 ## Always use `pub`
