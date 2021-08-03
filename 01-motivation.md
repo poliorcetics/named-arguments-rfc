@@ -41,7 +41,7 @@ parameters, 7 of which are named: a builder would be more useful in this situati
 Calling a builder for the `my_vec.insert` call above is clearly overengineering and creating a type
 for such a simple operation is overkill too. Named arguments are made to fill this spot where the
 other solutions are too big for what's intended but clarity is lost without something more than
-positional arguments.
+positional arguments, especially when types do no conflict.
 
 - Named arguments can be combined with other features to increase readability even more.
 
@@ -99,8 +99,8 @@ compile_opts.filter = ops::CompileFilter::new(
     library: LibRule::Default,
     binaries: FilterRule::All,
     tests: FilterRule::All,
-    examples: FilterRule::none(), // --examples option
-    benches: FilterRule::none(), // --benches option
+    examples: FilterRule::none(),
+    benches: FilterRule::none(),
 ); // also, specify --doc to run doc tests filtered
 ```
 
@@ -138,15 +138,16 @@ Named arguments already exists for `struct`s today: `Latitude { x: 42.1, y: 84.2
 arguments for functions can be seen as an extension of that capability.
 
 The previous paragraph opens an argument against: `Wrapper(x)` does not have named arguments and it
-is quite clear. I would argue this is completely and utterly false: the argument name **is** the
-name of the type itself. Wrapper types are here to increase clarity and provide additional
-guarantees through the type system, and they do so by being explicit (`NonZeroUsize` and friends are
-wrapper types that make their usage clear through their name for example).
+is quite clear. I would argue this is false: the argument name **is** the name of the type itself.
+Wrapper types are here to increase clarity and provide additional guarantees through the type
+system, and they do so by being explicit (`NonZeroUsize`, `NonNull` and friends are wrapper types
+that make their usage clear through their name for example).
 
 - Allow for a form of function overloading that is clearly visible.
 
 This would allow reusing short function names while adapting them to context or similar
-capabilities. See the example in the guide-level explanation for details.
+capabilities, as is already possible for types through the use of generics. See the example in the
+guide-level explanation for details.
 
 [cargo-named-args]:
   https://github.com/rust-lang/cargo/blob/b842849732f89df8675eb2d933c384d6338e4466/src/bin/cargo/commands/test.rs#L107-L113

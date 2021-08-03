@@ -33,6 +33,20 @@ certainly be changed.
 We should not allow both though, it would be redundant and would probably confuse people used to one
 syntax but not the other.
 
+## Never use `pub` and write the identifier twice
+
+`fn register(name name: String)` certainly works and is not banned but it is rather redundant and
+raises a question: did the function writer intend to write `pub` or use a different name and simply
+forgot ? Marking such cases as `pub` makes the original intent clear and reminds the developer that
+modifying the name is an API break.
+
+`pub` is not asked for when the two bindings are differents because the situation makes it clear
+already: two identifiers cannot be placed that way next to each other without an operator or a comma
+anywhere else in normal Rust (it can happen in macros though). Therefore the only possible case is
+that one name is public and the other is private. Using the first as the public name is then
+logical: it is in the position of the `pub` keyword, taking advantage of the similar placement with
+a similar functionnality, which is important for consistency.
+
 ## Enforce named arguments for closures
 
 Enforcing named arguments in closure without implicit casting would very heavy for users: it would
