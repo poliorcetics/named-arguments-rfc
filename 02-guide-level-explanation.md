@@ -63,9 +63,10 @@ opposite situation: it cannot be used outside the function's definition.
 
 Using `fn register(pub to db: Database)` is an error.
 
-Using `fn register(pub(in path) name: String)` is an error: named arguments always have the exact
-same visibility as the function they belong to. They must be used anytime the function is called so
-it is not possible to limit them to an arbitrary scope that is different from the function's.
+Using `fn register(pub(in path) name: String)` is also an error: named arguments always have the
+exact same visibility as the function they belong to. They must be used anytime the function is
+called so it is not possible to limit them to an arbitrary scope that is different from the
+function's.
 
 ### Declaring closures with named arguments
 
@@ -77,7 +78,9 @@ pub struct Point { x: f32, y: f32 }
 impl Point {
     // Using `Fn` form
     pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+    //                                         ^^^       ^^^ named arguments declared here
         f(add: self.x, mul: self.y)
+    //    ^^^          ^^^ and used here
     }
 }
 
@@ -85,9 +88,8 @@ impl Point {
 let closure = |pub add, other arg| { (add + 42.0, arg * 42.0) };
 ```
 
-Just like functions:
-
-- `add`, `arg` must be used inside the function when declared, `other` is not available.
+Just like functions, `add` and `arg` must be used inside the function when declared, `other` is not
+available.
 
 ### When using `self`
 
@@ -119,7 +121,7 @@ trait) cannot be omitted:
 `let mut arg = arg;` inside. This capability does not go away with named arguments.
 
 - When using `pub`; `mut` is placed after it to follow the current syntax of Rust where the
-  visibility is always first: `fn register(pub mut name: String)`.
+  visibility alwasy comes first: `fn register(pub mut name: String)`.
 - When using an identifier, `mut` comes first: `fn new_db(mut named name: String) -> Database`.
 
 The exact same rules apply for `ref`.
@@ -128,6 +130,9 @@ If _both_ `ref` and `mut` are present, they use the same order as today: `ref mu
 `pub ref mut`.
 
 ### When using a pattern
+
+Irrefutable patterns can be used in functions arguments today, and juste like `self`, they raise
+some questions.
 
 - `pub` **cannot** be used here since there is no identifier for it to expose.
 - The identifier **cannot** be a pattern. Its only use is as a public facing name, it does not
@@ -195,6 +200,9 @@ Functions and methods are called as usual, the parameters can be any expression 
 resolves to the correct type for the argument, but there is the identifier and a `:` before said
 expression.
 
+You cannot omit named arguments, even when the passed expression is exactly the same as the
+identifier: `my_db.register(name: name)` cannot be shortened to `my_db.register(name)`.
+
 ### Calling a function with named arguments indirectly
 
 All examples until now have always called the function (or closure) directly, but Rust also allows
@@ -232,8 +240,9 @@ some_point.strange_operation(|add, mul| twos(x: add, mul))
 // Disambiguation version
 some_point.strange_operation(twos(_:_:))
 some_point.strange_operation(twos(x:_:))
+some_point.strange_operation(closure(add:other:))
 
-// No need for disambiguation here, only one `closure` exists
+// No need for disambiguation for `closure` though, its name is not duplicated anywhere in the scope
 some_point.strange_operation(closure)
 ```
 
@@ -250,7 +259,7 @@ fn twos(x: f32) -> (f32, f32) {
 }
 
 some_point.strange_operation(twos(_:_:)) // OK
-some_point.strange_operation(twos) // ERROR, even if unambiguous
+some_point.strange_operation(twos) // ERROR, even if unambiguous from the parameter count POV
 ```
 
 ## Other points
@@ -282,8 +291,8 @@ fn create_conn<T: Connection>(t: &mut T) {
 
 ### Overloading a function's name with named arguments
 
-Named arguments also introduce a limited form a function overloading that is easy to check for both
-a human and the compiler and can be applied to profit fully from heavily used function names like
+Named arguments introduce a limited form a function overloading that is easy to check for both a
+human and the compiler and can be applied to profit fully from heavily used function names like
 `new`. This overloading is based on both the function's name and the public names of all the named
 arguments, ensuring two overloaded functions side by side cannot be mistaken for one another: the
 information is always present, even when reading code without tooling to show type and name hints.
@@ -320,6 +329,12 @@ impl<T, E> Result<T, E> {
 }
 ```
 
+You can think of this form of overloading as the function-level equivalent of `Result<T, E>`, where
+the simple name of the type `Result` is not enough for disambiguation: you have to provide the
+parameters and so `Result<Option<()>, ()>` and `Result<(), ()>` are different types overloading the
+same root name. This is an integral part of the Rust type system and is checked at compile time,
+just like named arguments.
+
 ### Can I mix named and unnamed arguments ?
 
 **Yes**, without any restrictions (beside the one on `self` in methods):
@@ -334,18 +349,19 @@ fn mix_and_match(pub named: usize, unnamed: usize, public hidden: usize) { /* ..
 
 ### Can I reorder named arguments when calling ?
 
-**No**. Just like unnamed arguments, named arguments are also position-based and cannot be reordered
-when calling: `register(name:surname:)` cannot be called as `register(surname:name:)`.
+**No**. Just like unnamed arguments and generics, named arguments are also position-based and cannot
+be reordered when calling: `register(name:surname:)` cannot be called as `register(surname:name:)`.
 
-Reordering them at the definition site is an API break, just like reordering unnamed arguments is an
-API break already.
+Reordering them at the definition site is an API break, just like reordering unnamed arguments or
+generics is an API break already.
 
 ### Documenting named arguments
 
 Talking about functions using named argument uses `register(name:surname:)`, not just `register()`.
 This allows differentiating overloads clearly and make it easier to remember named arguments are
 used for the function. Cases where one argument is public and the other is not are written as
-`register(_:surname:)`
+`register(_:surname:)`. Of course, using the shorthand `register()` is fine when clear in context,
+just like we use `Result` to talk about `Result<T, E>`.
 
 `rustdoc` shows the internal name of arguments already when generating documentation for Rust code.
 While leaky, this is very useful to understand some parameters and have names to refer to in textual
