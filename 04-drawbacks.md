@@ -4,36 +4,13 @@
 
 Why should we _not_ do this?
 
-## Closures
+## Overloading
 
-Enforcing named arguments in closure without implicit casting would very heavy for users: it would
-force the following:
+Historically (and not limited to Rust), overloading has been seen as a mixed bag: it allows lots of
+expressiveness but can quickly become unclear: which type is passed ? Which overload is called ? Is
+that constructor the move or copy one ?
 
-```rust
-// One unnamed argument must be passed
-fn take_closure_with_param<T>(f: Fn(T)) { /* ... */ }
-
-let cls = |param1| some_other_function(public_name: param1);
-take_closure_with_param(cls);
-
-// OR
-
-take_closure_with_param(|param1| some_other_function(public_name: param1));
-```
-
-Instead of the concise:
-
-```rust
-take_closure_with_param(some_other_function);
-```
-
-That point can be argued for and against though, and it can rightly be argued that implicitly
-casting argument names is wrong. I believe a more nuanced approach, through a lint, could be taken,
-which would allow people to choose whether to enforce explicitness or not, just like the
-`unsafe_op_in_unsafe_fn` lint does.
-
-It must be noted this would always stay possible and could again be linted for:
-
-```rust
-take_closure_with_param(some_other_function(public_name:));
-```
+This has mostly not been a problem for Swift and Python, because their use of overloading is based
+on something more visible, named arguments, not types invisible without hints. This is the form
+proposed for Rust and as such, it will not fall prey to the lack of clarity that simple
+type/number-based overload is subject to.
