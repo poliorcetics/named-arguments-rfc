@@ -84,6 +84,12 @@ closure expectation can be see as very very wrong. This argument though, forgets
 used very locally and often as parameters to other functions and closure, ensuring a form of clarity
 through context that is not available to functions far removed from their call site.
 
+### Completely disallow named arguments for `#[no_mangle]` and `extern`
+
+To ensure such functions are still first-class citizens in Rust, this has been rejected. It may
+prove too difficult to implement or too confusing and named arguments could be completely
+deactivated from them.
+
 ### Anonymous types (Structural Records) and type deduction and named types
 
 ```rust

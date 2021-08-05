@@ -612,7 +612,9 @@ the detailed proposal makes those examples work.
 
 ---
 
-Most points have already been presented in the previous section. This one focuses
+Most points have already been presented in the previous section. This one focuses on those that have
+not been detailed enough or that are discussed for the first time, to avoid repetition and
+conflicting information through mistakes in editing.
 
 ## Two (or more) named arguments with the same public name
 
@@ -930,6 +932,12 @@ Another argument against this behavior is clarity: implicitly casting argument n
 closure expectation can be see as very very wrong. This argument though, forgets that closure are
 used very locally and often as parameters to other functions and closure, ensuring a form of clarity
 through context that is not available to functions far removed from their call site.
+
+### Completely disallow named arguments for `#[no_mangle]` and `extern`
+
+To ensure such functions are still first-class citizens in Rust, this has been rejected. It may
+prove too difficult to implement or too confusing and named arguments could be completely
+deactivated from them.
 
 ### Anonymous types (Structural Records) and type deduction and named types
 
