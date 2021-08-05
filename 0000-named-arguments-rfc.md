@@ -550,9 +550,9 @@ parameters and so `Result<Option<()>, ()>` and `Result<(), ()>` are different ty
 same root name. This is an integral part of the Rust type system and is checked at compile time,
 just like named arguments.
 
-### Can I mix named and unnamed arguments ?
+### Mixing named and unnamed arguments
 
-**Yes**, without any restrictions (beside the one on `self` in methods):
+**Yes** it is possible, without any restrictions (beside the one on `self` in methods):
 
 ```rust
 // Calling with an unnamed and a named argument.
@@ -562,10 +562,11 @@ my_vec.insert(2, at: 3)
 fn mix_and_match(pub named: usize, unnamed: usize, public hidden: usize) { /* ... */ }
 ```
 
-### Can I reorder named arguments when calling ?
+### Reordering named arguments when calling
 
-**No**. Just like unnamed arguments and generics, named arguments are also position-based and cannot
-be reordered when calling: `register(name:surname:)` cannot be called as `register(surname:name:)`.
+**No** it is not possible. Just like unnamed arguments and generics, named arguments are also
+position-based and cannot be reordered when calling: `register(name:surname:)` cannot be called as
+`register(surname:name:)`.
 
 Reordering them at the definition site is an API break, just like reordering unnamed arguments or
 generics is an API break already.
@@ -609,6 +610,10 @@ This is the technical portion of the RFC. Explain the design in sufficient detai
 The section should return to the examples given in the previous section, and explain more fully how
 the detailed proposal makes those examples work.
 
+---
+
+Most points have already been presented in the previous section. This one focuses
+
 ## Two (or more) named arguments with the same public name
 
 There are three cases for this situation:
@@ -621,7 +626,7 @@ fn func3(name hidden1: u32, name hidden2: u32) { /* ... */ }
 
 - `func1` is clearly impossible because `name` would have two different meaning inside the
   function's definition. Aside from already being an error in today's Rust, it is simply impossible
-  to do.
+  to do for any language that uses names and not position to refer to parameters.
 
 - `func2` and `func3` could work in theory: named arguments as proposed in this RFC are
   position-based and their internal names are different: just like two arguments can have the same
@@ -634,7 +639,7 @@ error (`func1`) or to produce an error-by-default lint (`func2` and `func3`).
 
 The error-by-default lint is here because it is theoretically possible for very specific cases to
 need the same public name twice, but the Swift community has not found such use cases despite their
-heavy use of named arguments.
+heavy use of named arguments. Python does not allow this situation to occur at all.
 
 ## Interaction with traits
 
@@ -673,25 +678,30 @@ impl MyTrait for WrongImpl {
 Traits are one of Rust most powerful feature and this RFC endavours to integrate well with them, to
 avoid making them second class citizen.
 
-## Interaction with destructuring
+One special case that comes to mind is closure and the `Fn` family of traits ([with an exemple from
+the nomicon][nomicon-example]):
 
 ```rust
-fn process_pair((id, name): (u32, String)) { /* ... */ }
-fn process_point(Point { x, y: renamed }: Point) { /* ... */ }
+struct Closure<F> {
+    data: (u8, u16),
+    func: F,
+}
+
+impl<F> Closure<F>
+    where F: Fn(arg: &(u8, u16)) -> &u8,
+{
+    fn call(&self) -> &u8 {
+        (self.func)(&self.data)
+    }
+}
 ```
 
-Those declarations are valid in today's Rust but how do we add named arguments to them ? Does the
-`pub` keyword as used in previous examples make any sense here ?
+This `impl` is valid for **all** closures matching the expected types and arity thanks to implicit
+casting away of names in closures. Said another way, it is not possible to restrict an `Fn`
+implementation based on named arguments alone: the syntax is valid but casting will ensure it has no
+effect. As such, implementations can conflict if their only difference is named argument.
 
-The proposed solution is the following:
-
-```rust
-fn process_pair(public_name (id, name): (u32, String) ) { /* ... */ }
-fn process_point(public_name Point { x, y: renamed }: Point) { /* ... */ }
-```
-
-The `pub` keyword is disallowed because how would the compiler know which name to pick ? Calls use
-the same format presented before: they are not affected by destructuring, which is internal only.
+[nomicon-example]: https://doc.rust-lang.org/nomicon/hrtb.html
 
 ## Interaction with type ascription
 
@@ -743,7 +753,7 @@ would be harmful.
 
 This raises the problem of overload, which can happen in several forms.
 
-The first one is easily fixed by adding a type hint:
+The first one is easily fixed by adding a type hint (though that is **not** the proposed solution):
 
 ```rust
 fn new() -> u32 { 42 }
@@ -778,8 +788,8 @@ fn new(removing number: u32) -> u32 { 42 - number }
 let _ = new(adding:);
 ```
 
-This would not be a function call (made clear by the `:` at the end). In case of several arguments,
-it would be used as `new(adding:and:)`.
+This would not be a function call (made clear by the `:` at the end of the parameter list). In case
+of several arguments, it would be used as `new(adding:and:)`.
 
 This would not raise a problem with type ascription because there would be no type after the `:`s,
 especially after the last one and so the compiler would be able to unambiguously decide what is
@@ -788,27 +798,35 @@ happening.
 It would be even easier in the case of a function call: `ffi_call(object, new(adding:))` because the
 compiler would know what to expect as a type for the second parameter of `ffi_call` here.
 
-## Interaction with closures
+## Interaction with `#[no_mangle]`, `extern "C"` (or anything but the unstable Rust ABI)
 
-TODO
+Such functions are forbidden from using named arguments _if_ they are overloaded based on them. If
+they are not, the function can be uniquely identified by just its name even for FFI, which is the
+point of this attribute.
 
-While closures live in the closed environment of Rust and cannot be handed out like function
-pointers, they are similar at the usage point to function pointers. The Swift community has
-experience with closures and named arguments and their solution has several edge cases and small
-nits that make using closures with named arguments a little strange sometimes.
+This allows Rust code to call such function using named arguments while C code will not have to use
+them, and thus makes the following example valid:
 
-As such, closures and named arguments will be discussed later, in the [Unresolved
-Questions][unresolved-questions] section.
+```rust
+#[no_mangle]
+extern "C" fn callback(pub return_code: u32) { /* ... */ }
 
-## Interaction with `#[no_mangle]`
+// lib.rs
+callback(return_code: 42);
 
-Such functions would be forbidden from using named arguments _if_ they are overloaded based on them.
-If they are not, the function could be uniquely identified by just its name even for FFI, which is
-the point of this attribute.
+// main.c
+callback(42);
+```
 
-## Interaction with `extern "C"` (or anything but the unstable Rust ABI)
+This one on the other hand, willwould not compile:
 
-This uses the sames rules as `#[no_mangle]`.
+```rust
+#[no_mangle]
+extern "C" fn callback(pub return_code: u32) { /* ... */ }
+
+#[no_mangle]
+extern "C" fn callback(pub data: *const ()) { /* ... */ }
+```
 
 # Drawbacks
 
@@ -816,39 +834,16 @@ This uses the sames rules as `#[no_mangle]`.
 
 Why should we _not_ do this?
 
-## Closures
+## Overloading
 
-Enforcing named arguments in closure without implicit casting would very heavy for users: it would
-force the following:
+Historically (and not limited to Rust), overloading has been seen as a mixed bag: it allows lots of
+expressiveness but can quickly become unclear: which type is passed ? Which overload is called ? Is
+that constructor the move or copy one ?
 
-```rust
-// One unnamed argument must be passed
-fn take_closure_with_param<T>(f: Fn(T)) { /* ... */ }
-
-let cls = |param1| some_other_function(public_name: param1);
-take_closure_with_param(cls);
-
-// OR
-
-take_closure_with_param(|param1| some_other_function(public_name: param1));
-```
-
-Instead of the concise:
-
-```rust
-take_closure_with_param(some_other_function);
-```
-
-That point can be argued for and against though, and it can rightly be argued that implicitly
-casting argument names is wrong. I believe a more nuanced approach, through a lint, could be taken,
-which would allow people to choose whether to enforce explicitness or not, just like the
-`unsafe_op_in_unsafe_fn` lint does.
-
-It must be noted this would always stay possible and could again be linted for:
-
-```rust
-take_closure_with_param(some_other_function(public_name:));
-```
+This has mostly not been a problem for Swift and Python, because their use of overloading is based
+on something more visible, named arguments, not types invisible without hints. This is the form
+proposed for Rust and as such, it will not fall prey to the lack of clarity that simple
+type/number-based overload is subject to.
 
 # Rationale and alternatives
 
@@ -871,7 +866,7 @@ TODO: explain choices
 
 ## Alternatives
 
-## Always use `pub`
+### Always use `pub`
 
 In the Guide Level Explanation, is it said:
 
@@ -885,7 +880,7 @@ certainly be changed.
 We should not allow both though, it would be redundant and would probably confuse people used to one
 syntax but not the other.
 
-## Never use `pub` and write the identifier twice
+### Never use `pub` and write the identifier twice
 
 `fn register(name name: String)` certainly works and is not banned but it is rather redundant and
 raises a question: did the function writer intend to write `pub` or use a different name and simply
@@ -899,7 +894,7 @@ that one name is public and the other is private. Using the first as the public 
 logical: it is in the position of the `pub` keyword, taking advantage of the similar placement with
 a similar functionnality, which is important for consistency.
 
-## Enforce named arguments for closures
+### Enforce named arguments for closures
 
 Enforcing named arguments in closure without implicit casting would very heavy for users: it would
 force the following:
@@ -931,7 +926,12 @@ It must be noted this would always stay possible:
 take_closure_with_param(some_other_function(public_name:));
 ```
 
-### Anonymous types (Structural Records) and type deduction
+Another argument against this behavior is clarity: implicitly casting argument names to fit a
+closure expectation can be see as very very wrong. This argument though, forgets that closure are
+used very locally and often as parameters to other functions and closure, ensuring a form of clarity
+through context that is not available to functions far removed from their call site.
+
+### Anonymous types (Structural Records) and type deduction and named types
 
 ```rust
 fn foo<T>({ len: usize, f: Fn(T) -> u32 }) -> u32;
@@ -961,10 +961,6 @@ let my_conn = ConnectionBuilder::new()
     .build();
 ```
 
-### Named types
-
-The examples above about `Vec::reserve_exact` and `fn foo<T> ...` are applicable here too.
-
 ### Do nothing
 
 Without named arguments Rust is already a very good language. Named arguments are a nice feature and
@@ -973,6 +969,8 @@ Rust can live without them, as it already has for years.
 
 This has been rejected for several reasons in this RFC, reasons that have been explained earlier
 (safety, soundness) but also because the alternatives are either insufficient or too heavy-handed.
+Named arguments have also been on the "nice-to-have-but-needs-design" list for years. This RFC is
+just the latest attempt at the "design" part.
 
 # Prior art
 
@@ -1035,25 +1033,36 @@ summarise most of them here. They are in no particular order.
   instead of simply `enum B { Variant(String) }`. This point is often raised to argue about brittle
   syntax. This can be true if the feature is wrongly thought out and designed and named arguments
   should certainly make it clear what is named and what is not so that programmers can be sure they
-  are not breaking the public interface of some function in a minor version change.
+  are not breaking the public interface of some function in a minor version change. **But** this
+  argument is also false. Named arguments as proposed here **do not break existing Rust code** one
+  bit, because the public name is separate from the internal binding. If both were always shared,
+  then yes the feature would be error-prone, but they are not, for exactly this reason.
+
 - **Named arguments encourage less well thought out interfaces**: I do not think any conclusive
   evidence has ever been brought to light about this point. On the other hand, the opposite has been
   extensively studied and battle-tested through Swift's version of the feature, which is lauded by
   practionners of the language, notably library designers. Another example, from Rust even, is
-  structs. Why is `Latitude { x: 42.1, y: 84.2 }` seen as good if named arguments are not good ?
+  structs. Why is `Latitude { x: 42.1, y: 84.2 }` (instead of `Latitude { 42.1, 84.2 }`) seen as
+  good if named arguments are not good ? To go further, why even name types ? We only need to know
+  the type layout after all, and then we can access all of its data through offsets and
+  dereferencing (such a language does exist, it's called Assembly).
+
 - **Use a (builder) type instead**: this argument is counterproductive to me, here it is in another
   form: why would you use (especially generic) functions when macros can do the job and more well
   enough ? Types (and builders) have their uses and they can be used in conjunction to named
   arguments, they are not opposites, just like macros and functions nowadays.
+
 - **Suppose named arguments are allowed, soon people will ask for arbitrary argument order and
   optional arguments**: they are different features. One being accepted is **not** a sign of the
   other being accepted. An example is inheritance in today's Rust. Traits can be subtraits
   (`DoubleEndedIterator: Iterator`) but types cannot inherit other types and this has never been
   accepted before when people asked for it.
+
 - **We would benefit far more from reducing the boilerplate involved in the builder pattern**: the
   builder pattern is not opposite to named arguments. Named arguments will **not** help you when
   there are 13 parameters to handle for a function input. A builder pattern will be overkill if
   there are only two `usize` parameters.
+
 - **Developers need to memorize what arguments are positional and cannot be named in function calls,
   and what arguments are named**: this is true. The response is that code is read **far** more than
   it is written. When a choice has to be made between the writer and reader this should be taken
@@ -1084,9 +1093,8 @@ fn one_string_to_bind_them_all<I: Iter<Item = String>>(i: I) -> String { /* ... 
 
 ### Overloading already exists in Rust
 
-TODO: complete this
-
-There are two main ways to overload in Rust.
+Overloading is already available, from a certain point of view, in today's Rust, with two main ways
+to achieve it.
 
 The first is with members and methods:
 

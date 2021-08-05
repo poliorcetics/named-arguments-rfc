@@ -59,25 +59,36 @@ summarise most of them here. They are in no particular order.
   instead of simply `enum B { Variant(String) }`. This point is often raised to argue about brittle
   syntax. This can be true if the feature is wrongly thought out and designed and named arguments
   should certainly make it clear what is named and what is not so that programmers can be sure they
-  are not breaking the public interface of some function in a minor version change.
+  are not breaking the public interface of some function in a minor version change. **But** this
+  argument is also false. Named arguments as proposed here **do not break existing Rust code** one
+  bit, because the public name is separate from the internal binding. If both were always shared,
+  then yes the feature would be error-prone, but they are not, for exactly this reason.
+
 - **Named arguments encourage less well thought out interfaces**: I do not think any conclusive
   evidence has ever been brought to light about this point. On the other hand, the opposite has been
   extensively studied and battle-tested through Swift's version of the feature, which is lauded by
   practionners of the language, notably library designers. Another example, from Rust even, is
-  structs. Why is `Latitude { x: 42.1, y: 84.2 }` seen as good if named arguments are not good ?
+  structs. Why is `Latitude { x: 42.1, y: 84.2 }` (instead of `Latitude { 42.1, 84.2 }`) seen as
+  good if named arguments are not good ? To go further, why even name types ? We only need to know
+  the type layout after all, and then we can access all of its data through offsets and
+  dereferencing (such a language does exist, it's called Assembly).
+
 - **Use a (builder) type instead**: this argument is counterproductive to me, here it is in another
   form: why would you use (especially generic) functions when macros can do the job and more well
   enough ? Types (and builders) have their uses and they can be used in conjunction to named
   arguments, they are not opposites, just like macros and functions nowadays.
+
 - **Suppose named arguments are allowed, soon people will ask for arbitrary argument order and
   optional arguments**: they are different features. One being accepted is **not** a sign of the
   other being accepted. An example is inheritance in today's Rust. Traits can be subtraits
   (`DoubleEndedIterator: Iterator`) but types cannot inherit other types and this has never been
   accepted before when people asked for it.
+
 - **We would benefit far more from reducing the boilerplate involved in the builder pattern**: the
   builder pattern is not opposite to named arguments. Named arguments will **not** help you when
   there are 13 parameters to handle for a function input. A builder pattern will be overkill if
   there are only two `usize` parameters.
+
 - **Developers need to memorize what arguments are positional and cannot be named in function calls,
   and what arguments are named**: this is true. The response is that code is read **far** more than
   it is written. When a choice has to be made between the writer and reader this should be taken
@@ -108,9 +119,8 @@ fn one_string_to_bind_them_all<I: Iter<Item = String>>(i: I) -> String { /* ... 
 
 ### Overloading already exists in Rust
 
-TODO: complete this
-
-There are two main ways to overload in Rust.
+Overloading is already available, from a certain point of view, in today's Rust, with two main ways
+to achieve it.
 
 The first is with members and methods:
 

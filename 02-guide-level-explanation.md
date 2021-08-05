@@ -335,9 +335,9 @@ parameters and so `Result<Option<()>, ()>` and `Result<(), ()>` are different ty
 same root name. This is an integral part of the Rust type system and is checked at compile time,
 just like named arguments.
 
-### Can I mix named and unnamed arguments ?
+### Mixing named and unnamed arguments
 
-**Yes**, without any restrictions (beside the one on `self` in methods):
+**Yes** it is possible, without any restrictions (beside the one on `self` in methods):
 
 ```rust
 // Calling with an unnamed and a named argument.
@@ -347,10 +347,11 @@ my_vec.insert(2, at: 3)
 fn mix_and_match(pub named: usize, unnamed: usize, public hidden: usize) { /* ... */ }
 ```
 
-### Can I reorder named arguments when calling ?
+### Reordering named arguments when calling
 
-**No**. Just like unnamed arguments and generics, named arguments are also position-based and cannot
-be reordered when calling: `register(name:surname:)` cannot be called as `register(surname:name:)`.
+**No** it is not possible. Just like unnamed arguments and generics, named arguments are also
+position-based and cannot be reordered when calling: `register(name:surname:)` cannot be called as
+`register(surname:name:)`.
 
 Reordering them at the definition site is an API break, just like reordering unnamed arguments or
 generics is an API break already.

@@ -19,7 +19,7 @@ TODO: explain choices
 
 ## Alternatives
 
-## Always use `pub`
+### Always use `pub`
 
 In the Guide Level Explanation, is it said:
 
@@ -33,7 +33,7 @@ certainly be changed.
 We should not allow both though, it would be redundant and would probably confuse people used to one
 syntax but not the other.
 
-## Never use `pub` and write the identifier twice
+### Never use `pub` and write the identifier twice
 
 `fn register(name name: String)` certainly works and is not banned but it is rather redundant and
 raises a question: did the function writer intend to write `pub` or use a different name and simply
@@ -47,7 +47,7 @@ that one name is public and the other is private. Using the first as the public 
 logical: it is in the position of the `pub` keyword, taking advantage of the similar placement with
 a similar functionnality, which is important for consistency.
 
-## Enforce named arguments for closures
+### Enforce named arguments for closures
 
 Enforcing named arguments in closure without implicit casting would very heavy for users: it would
 force the following:
@@ -79,7 +79,12 @@ It must be noted this would always stay possible:
 take_closure_with_param(some_other_function(public_name:));
 ```
 
-### Anonymous types (Structural Records) and type deduction
+Another argument against this behavior is clarity: implicitly casting argument names to fit a
+closure expectation can be see as very very wrong. This argument though, forgets that closure are
+used very locally and often as parameters to other functions and closure, ensuring a form of clarity
+through context that is not available to functions far removed from their call site.
+
+### Anonymous types (Structural Records) and type deduction and named types
 
 ```rust
 fn foo<T>({ len: usize, f: Fn(T) -> u32 }) -> u32;
@@ -109,10 +114,6 @@ let my_conn = ConnectionBuilder::new()
     .build();
 ```
 
-### Named types
-
-The examples above about `Vec::reserve_exact` and `fn foo<T> ...` are applicable here too.
-
 ### Do nothing
 
 Without named arguments Rust is already a very good language. Named arguments are a nice feature and
@@ -121,3 +122,5 @@ Rust can live without them, as it already has for years.
 
 This has been rejected for several reasons in this RFC, reasons that have been explained earlier
 (safety, soundness) but also because the alternatives are either insufficient or too heavy-handed.
+Named arguments have also been on the "nice-to-have-but-needs-design" list for years. This RFC is
+just the latest attempt at the "design" part.
