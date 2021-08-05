@@ -11,6 +11,12 @@ This is the technical portion of the RFC. Explain the design in sufficient detai
 The section should return to the examples given in the previous section, and explain more fully how
 the detailed proposal makes those examples work.
 
+---
+
+Most points have already been presented in the previous section. This one focuses on those that have
+not been detailed enough or that are discussed for the first time, to avoid repetition and
+conflicting information through mistakes in editing.
+
 ## Two (or more) named arguments with the same public name
 
 There are three cases for this situation:
@@ -23,7 +29,7 @@ fn func3(name hidden1: u32, name hidden2: u32) { /* ... */ }
 
 - `func1` is clearly impossible because `name` would have two different meaning inside the
   function's definition. Aside from already being an error in today's Rust, it is simply impossible
-  to do.
+  to do for any language that uses names and not position to refer to parameters.
 
 - `func2` and `func3` could work in theory: named arguments as proposed in this RFC are
   position-based and their internal names are different: just like two arguments can have the same
@@ -36,7 +42,7 @@ error (`func1`) or to produce an error-by-default lint (`func2` and `func3`).
 
 The error-by-default lint is here because it is theoretically possible for very specific cases to
 need the same public name twice, but the Swift community has not found such use cases despite their
-heavy use of named arguments.
+heavy use of named arguments. Python does not allow this situation to occur at all.
 
 ## Interaction with traits
 
@@ -75,25 +81,30 @@ impl MyTrait for WrongImpl {
 Traits are one of Rust most powerful feature and this RFC endavours to integrate well with them, to
 avoid making them second class citizen.
 
-## Interaction with destructuring
+One special case that comes to mind is closure and the `Fn` family of traits ([with an exemple from
+the nomicon][nomicon-example]):
 
 ```rust
-fn process_pair((id, name): (u32, String)) { /* ... */ }
-fn process_point(Point { x, y: renamed }: Point) { /* ... */ }
+struct Closure<F> {
+    data: (u8, u16),
+    func: F,
+}
+
+impl<F> Closure<F>
+    where F: Fn(arg: &(u8, u16)) -> &u8,
+{
+    fn call(&self) -> &u8 {
+        (self.func)(&self.data)
+    }
+}
 ```
 
-Those declarations are valid in today's Rust but how do we add named arguments to them ? Does the
-`pub` keyword as used in previous examples make any sense here ?
+This `impl` is valid for **all** closures matching the expected types and arity thanks to implicit
+casting away of names in closures. Said another way, it is not possible to restrict an `Fn`
+implementation based on named arguments alone: the syntax is valid but casting will ensure it has no
+effect. As such, implementations can conflict if their only difference is named argument.
 
-The proposed solution is the following:
-
-```rust
-fn process_pair(public_name (id, name): (u32, String) ) { /* ... */ }
-fn process_point(public_name Point { x, y: renamed }: Point) { /* ... */ }
-```
-
-The `pub` keyword is disallowed because how would the compiler know which name to pick ? Calls use
-the same format presented before: they are not affected by destructuring, which is internal only.
+[nomicon-example]: https://doc.rust-lang.org/nomicon/hrtb.html
 
 ## Interaction with type ascription
 
@@ -145,7 +156,7 @@ would be harmful.
 
 This raises the problem of overload, which can happen in several forms.
 
-The first one is easily fixed by adding a type hint:
+The first one is easily fixed by adding a type hint (though that is **not** the proposed solution):
 
 ```rust
 fn new() -> u32 { 42 }
@@ -180,8 +191,8 @@ fn new(removing number: u32) -> u32 { 42 - number }
 let _ = new(adding:);
 ```
 
-This would not be a function call (made clear by the `:` at the end). In case of several arguments,
-it would be used as `new(adding:and:)`.
+This would not be a function call (made clear by the `:` at the end of the parameter list). In case
+of several arguments, it would be used as `new(adding:and:)`.
 
 This would not raise a problem with type ascription because there would be no type after the `:`s,
 especially after the last one and so the compiler would be able to unambiguously decide what is
@@ -190,24 +201,32 @@ happening.
 It would be even easier in the case of a function call: `ffi_call(object, new(adding:))` because the
 compiler would know what to expect as a type for the second parameter of `ffi_call` here.
 
-## Interaction with closures
+## Interaction with `#[no_mangle]`, `extern "C"` (or anything but the unstable Rust ABI)
 
-TODO
+Such functions are forbidden from using named arguments _if_ they are overloaded based on them. If
+they are not, the function can be uniquely identified by just its name even for FFI, which is the
+point of this attribute.
 
-While closures live in the closed environment of Rust and cannot be handed out like function
-pointers, they are similar at the usage point to function pointers. The Swift community has
-experience with closures and named arguments and their solution has several edge cases and small
-nits that make using closures with named arguments a little strange sometimes.
+This allows Rust code to call such function using named arguments while C code will not have to use
+them, and thus makes the following example valid:
 
-As such, closures and named arguments will be discussed later, in the [Unresolved
-Questions][unresolved-questions] section.
+```rust
+#[no_mangle]
+extern "C" fn callback(pub return_code: u32) { /* ... */ }
 
-## Interaction with `#[no_mangle]`
+// lib.rs
+callback(return_code: 42);
 
-Such functions would be forbidden from using named arguments _if_ they are overloaded based on them.
-If they are not, the function could be uniquely identified by just its name even for FFI, which is
-the point of this attribute.
+// main.c
+callback(42);
+```
 
-## Interaction with `extern "C"` (or anything but the unstable Rust ABI)
+This one on the other hand, willwould not compile:
 
-This uses the sames rules as `#[no_mangle]`.
+```rust
+#[no_mangle]
+extern "C" fn callback(pub return_code: u32) { /* ... */ }
+
+#[no_mangle]
+extern "C" fn callback(pub data: *const ()) { /* ... */ }
+```
