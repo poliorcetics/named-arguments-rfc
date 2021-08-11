@@ -42,6 +42,81 @@ The error-by-default lint is here because it is theoretically possible for very 
 need the same public name twice, but the Swift community has not found such use cases despite their
 heavy use of named arguments. Python does not allow this situation to occur at all.
 
+## Overloading resolution
+
+There is one case that was not mentioned in [Calling a function with named arguments
+indirectly][calling-a-function-with-named arguments-indirectly]:
+
+```rust
+pub struct Point { x: f32, y: f32 }
+
+impl Point {
+    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+        f(add: self.x, mul: self.y)
+    }
+}
+
+fn twos(x: f32, y: f32) -> (f32, f32) {
+    (x + 2.0, y * 2.0)
+}
+
+fn twos(pub x: f32, y: f32) -> (f32, f32) {
+    (y + 2.0, x * 2.0) // inverted x & y
+}
+
+some_point.strange_operation(twos) // unambiguously refers to `twos(_:_:)`
+```
+
+This special case is necessary to stay compatible with today's Rust and allow named arguments in all
+editions (which allows us to introduce them in the standard library).
+
+Passing methods and closures with named arguments is not possible in this shorthand form, to ensure
+the following case always behave correctly:
+
+```rust
+// Before change
+
+pub struct Point { x: f32, y: f32 }
+
+impl Point {
+    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+        f(add: self.x, mul: self.y)
+    }
+}
+
+fn twos(pub x: f32, y: f32) -> (f32, f32) {
+    (y + 2.0, x * 2.0) // inverted x & y
+}
+
+some_point.strange_operation(twos) // Previously referred to `twos(x:y:)`,
+                                   // now unambiguously and silently refers to `twos(_:_:)`
+
+// Added in a new commit
+
+fn twos(x: f32, y: f32) -> (f32, f32) {
+    (x + 2.0, y * 2.0)
+}
+```
+
+The compiler would enforce writing `some_point.strange_operation(twos(x:y:))` to ensure this silent
+overload would not happen.
+
+## Calling a function with named arguments indirectly, the case of `self`.
+
+```rust
+pub struct Point { x: f32, y: f32 }
+
+impl Point {
+    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+        f(add: self.x, mul: self.y)
+    }
+}
+```
+
+The full reference to `Point::strange_operation` is `Point::strange_operation(_:_:)`, with **two**
+unnamed arguments, not one. Writing `my_point.strange_operation(_:)` is incorrect, just like trying
+to pass `my_point.strange_operation` is invalid already.
+
 ## Interaction with traits
 
 Parameter names are not part of a trait API in today's Rust, justly so: they are helpful guide when
