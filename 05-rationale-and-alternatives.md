@@ -41,7 +41,16 @@ method would then always resolve to `Option::or(self, optb: Option<T>)`, the one
 arguments and the compiler would complain if this form is used for a method taking named arguments,
 even if currently unambiguous.
 
-## Alternatives
+### Disallowing keywords
+
+`for`, `in`, `as` are not allowed by this RFC in the position of named arguments. This is for
+simplicity and clarity: Rust developers and tooling expect them to be keywords, changing this
+expectation while introducing such a big change to the language would probably be very confusing for
+some time. They could be allowed later, once named arguments have been here for some time and people
+have had time to get used to them.
+
+They could also be authorised directly to allow for their use in the standard library for example,
+if we find several cases where they would be the best fit.
 
 ### Always use `pub`
 
@@ -71,48 +80,13 @@ that one name is public and the other is private. Using the first as the public 
 logical: it is in the position of the `pub` keyword, taking advantage of the similar placement with
 a similar functionnality, which is important for consistency.
 
-### Enforce named arguments for closures
-
-Enforcing named arguments in closure without implicit casting would very heavy for users: it would
-force the following:
-
-```rust
-fn take_closure_with_param<T>(f: Fn(T)) { /* ... */ }
-
-let cls = |param1| some_other_function(public_name: param1);
-take_closure_with_param(cls);
-
-// Or
-take_closure_with_param(|param1| some_other_function(public_name: param1));
-```
-
-Instead of:
-
-```rust
-take_closure_with_param(some_other_function);
-```
-
-That point can be argued for and against though, and it can rightly be argued that implicitly
-casting argument names is wrong. I believe a more nuanced approach, through a lint, could be taken,
-which would allow people to choose whether to enforce explicitness or not, just like the
-`unsafe_op_in_unsafe_fn` lint does.
-
-It must be noted this would always stay possible:
-
-```rust
-take_closure_with_param(some_other_function(public_name:));
-```
-
-Another argument against this behavior is clarity: implicitly casting argument names to fit a
-closure expectation can be see as very very wrong. This argument though, forgets that closure are
-used very locally and often as parameters to other functions and closure, ensuring a form of clarity
-through context that is not available to functions far removed from their call site.
+## Alternatives
 
 ### Completely disallow named arguments for `#[no_mangle]` and `extern`
 
 To ensure such functions are still first-class citizens in Rust, this has been rejected. It may
 prove too difficult to implement or too confusing and named arguments could be completely
-deactivated from them.
+deactivated for them.
 
 ### Anonymous types (Structural Records) and type deduction and named types
 
