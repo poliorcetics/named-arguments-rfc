@@ -15,6 +15,32 @@ There have been several choices made in this RFC that need justification. In no 
 
 TODO: explain choices
 
+### Allowing overloading
+
+The form of overload proposed would notably allow moving the standard library mostly without
+troubles: `Option::ok_or` could continue to exist and be deprecated in favor of `Option::ok(or:)`.
+
+There would probably be errors, especially around functions passed as closures in some places, when
+the current argument is `Option::or` for example: it could refer to
+`Option::or(self, optb: Option<T>)` or `Option::or(self, else f: F)`.
+
+One source-preserving solution to this is to add either a rule saying the one without names is the
+default one or an attribute that marks a method as the default one when ambiguous. Type errors would
+then catch the wrong cases, though there are probably situations where that woulnd't work.
+
+The non-source-preserving solution is for the compiler to propose fixes such as `Option::or(_:_:)`
+or to introduce unambiguous closures itself: `|a0, a1| a0.or(a1)`.
+
+As the main purpose of named arguments is clarity, the preferred solution would to ask for
+clarification when the situation is ambiguous. This has the huge disavantage of gating named
+arguments to a new edition and basically banning them from the standard library since code using
+previous editions has to compile with new versions of Rust.
+
+To ensure named arguments are accessible for all, passing `Option::or` (or any other overloaded)
+method would then always resolve to `Option::or(self, optb: Option<T>)`, the one without named
+arguments and the compiler would complain if this form is used for a method taking named arguments,
+even if currently unambiguous.
+
 ## Alternatives
 
 ### Always use `pub`

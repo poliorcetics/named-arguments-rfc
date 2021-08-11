@@ -958,7 +958,8 @@ previous editions has to compile with new versions of Rust.
 
 To ensure named arguments are accessible for all, passing `Option::or` (or any other overloaded)
 method would then always resolve to `Option::or(self, optb: Option<T>)`, the one without named
-arguments.
+arguments and the compiler would complain if this form is used for a method taking named arguments,
+even if currently unambiguous.
 
 ## Alternatives
 
