@@ -227,6 +227,28 @@ telling since it is very easy for such comments to get out of date and become ob
 wrong but using such a brittle form of named arguments was still deemed necessary and worth the
 maintenance cost.
 
+All languages that support comments but not inline comments can do this if the developer writes the
+function call on several lines. The above examples could have been written that way:
+
+```c++
+config::Provider::fromYAMLFile(
+    UserConfig,
+    "", // Directory
+    TFS
+)
+
+// Taking even more space:
+llvm::sys::fs::real_path(
+    CheckFile,
+    Path,
+    // expand_tilde
+    true
+)
+```
+
+I do not know of a single programming language that does not support the second form, even COBOL can
+do it.
+
 [ex1]:
   https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L794
 [ex2]:
