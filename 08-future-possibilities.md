@@ -1,7 +1,5 @@
 # Future possibilities
 
-[future-possibilities]: #future-possibilities
-
 Think about what the natural extension and evolution of your proposal would be and how it would
 affect the language and project as a whole in a holistic way. Try to use this section as a tool to
 more fully consider all possible interactions with the project and language in your proposal. Also

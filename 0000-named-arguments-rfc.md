@@ -29,8 +29,6 @@ But first, some goals for this RFC:
 
 # Summary
 
-[summary]: #summary
-
 This RFC introduces _named arguments_ for Rust. Named arguments are the ability to call a function ,
 method or closure while precising the caller-facing name of the arguments, greatly improving clarity
 in many situations. Of course functions where the argument is already clear do not have to use them:
@@ -58,8 +56,6 @@ open_port(port=12345, max_connexions=10, timeout=60)
 ```
 
 # Motivation
-
-[motivation]: #motivation
 
 The main point of this section is that named arguments make for harder to misuse interfaces through
 clarity and simplicity of both declaration and usage.
@@ -214,8 +210,6 @@ guide-level explanation for details.
 [f64-atan2]: https://doc.rust-lang.org/stable/std/primitive.f64.html#method.atan2
 
 # Guide-level explanation
-
-[guide-level-explanation]: #guide-level-explanation
 
 Explain the proposal as if it was already included in the language and you were teaching it to
 another Rust programmer. That generally means:
@@ -456,26 +450,30 @@ some_point.strange_operation(|add, mul| twos(x: add, mul))
 some_point.strange_operation(twos(_:_:))
 some_point.strange_operation(twos(x:_:))
 some_point.strange_operation(closure(add:other:))
-
-// No need for disambiguation for `closure` though, its name is not duplicated anywhere in the scope
-some_point.strange_operation(closure)
 ```
+
+#### Disallowed calls
 
 Note that if overloading brings two versions with a different number of parameters, it is still
 necessary to be explicit about which function is passed, to ensure clarity for readers:
 
 ```rust
-fn twos(x: f32, y: f32) -> (f32, f32) {
+fn twos(pub x: f32, pub y: f32) -> (f32, f32) {
     (x + 2.0, y * 2.0)
 }
 
-fn twos(x: f32) -> (f32, f32) {
+fn twos(pub x: f32) -> (f32, f32) {
     (x + 2.0, x * 2.0)
 }
 
-some_point.strange_operation(twos(_:_:)) // OK
+some_point.strange_operation(twos(x:y:)) // OK
 some_point.strange_operation(twos) // ERROR, even if unambiguous from the parameter count POV
 ```
+
+In the same way, `some_point.strange_operation(closure)` is also banned for being ambiguous and
+potentially dangerous.
+
+See [Overloading resolution][overloading-resolution] for details on this behavior.
 
 ## Other points
 
@@ -577,7 +575,8 @@ Talking about functions using named argument uses `register(name:surname:)`, not
 This allows differentiating overloads clearly and make it easier to remember named arguments are
 used for the function. Cases where one argument is public and the other is not are written as
 `register(_:surname:)`. Of course, using the shorthand `register()` is fine when clear in context,
-just like we use `Result` to talk about `Result<T, E>`.
+just like we use `Result` to talk about `Result<T, E>`, though this form is intended to be only used
+when there are no public arguments, to ensure maximal clarity for readers.
 
 `rustdoc` shows the internal name of arguments already when generating documentation for Rust code.
 While leaky, this is very useful to understand some parameters and have names to refer to in textual
@@ -593,13 +592,12 @@ Instead `rustdoc` behaves as such:
   [does it](https://swiftdoc.org/v5.1/type/bool/).
 - Keep the behavior of showing `_` when a pattern was used as the argument (like above).
 - Keep hiding `mut` and `ref` like currently done.
-- Allow intradoc-links using `[link](register(_:surname:))` to differentiate overloads.
+- Allow intradoc-links using `[link](register(_:surname:))` to differentiate overloads (writing
+  `[link](register)` would refer to a `register` function that takes only unnamed arguments).
 
 [mul-add]: https://doc.rust-lang.org/stable/std/primitive.f32.html#method.mul_add
 
 # Reference-level explanation
-
-[reference-level-explanation]: #reference-level-explanation
 
 This is the technical portion of the RFC. Explain the design in sufficient detail that:
 
@@ -642,6 +640,81 @@ error (`func1`) or to produce an error-by-default lint (`func2` and `func3`).
 The error-by-default lint is here because it is theoretically possible for very specific cases to
 need the same public name twice, but the Swift community has not found such use cases despite their
 heavy use of named arguments. Python does not allow this situation to occur at all.
+
+## Overloading resolution
+
+There is one case that was not mentioned in [Calling a function with named arguments
+indirectly][calling-a-function-with-named arguments-indirectly]:
+
+```rust
+pub struct Point { x: f32, y: f32 }
+
+impl Point {
+    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+        f(add: self.x, mul: self.y)
+    }
+}
+
+fn twos(x: f32, y: f32) -> (f32, f32) {
+    (x + 2.0, y * 2.0)
+}
+
+fn twos(pub x: f32, y: f32) -> (f32, f32) {
+    (y + 2.0, x * 2.0) // inverted x & y
+}
+
+some_point.strange_operation(twos) // unambiguously refers to `twos(_:_:)`
+```
+
+This special case is necessary to stay compatible with today's Rust and allow named arguments in all
+editions (which allows us to introduce them in the standard library).
+
+Passing methods and closures with named arguments is not possible in this shorthand form, to ensure
+the following case always behave correctly:
+
+```rust
+// Before change
+
+pub struct Point { x: f32, y: f32 }
+
+impl Point {
+    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+        f(add: self.x, mul: self.y)
+    }
+}
+
+fn twos(pub x: f32, y: f32) -> (f32, f32) {
+    (y + 2.0, x * 2.0) // inverted x & y
+}
+
+some_point.strange_operation(twos) // Previously referred to `twos(x:y:)`,
+                                   // now unambiguously and silently refers to `twos(_:_:)`
+
+// Added in a new commit
+
+fn twos(x: f32, y: f32) -> (f32, f32) {
+    (x + 2.0, y * 2.0)
+}
+```
+
+The compiler would enforce writing `some_point.strange_operation(twos(x:y:))` to ensure this silent
+overload would not happen.
+
+## Calling a function with named arguments indirectly, the case of `self`.
+
+```rust
+pub struct Point { x: f32, y: f32 }
+
+impl Point {
+    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+        f(add: self.x, mul: self.y)
+    }
+}
+```
+
+The full reference to `Point::strange_operation` is `Point::strange_operation(_:_:)`, with **two**
+unnamed arguments, not one. Writing `my_point.strange_operation(_:)` is incorrect, just like trying
+to pass `my_point.strange_operation` is invalid already.
 
 ## Interaction with traits
 
@@ -832,8 +905,6 @@ extern "C" fn callback(pub data: *const ()) { /* ... */ }
 
 # Drawbacks
 
-[drawbacks]: #drawbacks
-
 Why should we _not_ do this?
 
 ## Overloading
@@ -849,8 +920,6 @@ type/number-based overload is subject to.
 
 # Rationale and alternatives
 
-[rationale-and-alternatives]: #rationale-and-alternatives
-
 - Why is this design the best in the space of possible designs?
 - What other designs have been considered and what is the rationale for not choosing them?
 - What is the impact of not doing this?
@@ -865,6 +934,31 @@ There have been several choices made in this RFC that need justification. In no 
 - Not allowing keywords in the public name (`for`, `in`, `as` especially)
 
 TODO: explain choices
+
+### Allowing overloading
+
+The form of overload proposed would notably allow moving the standard library mostly without
+troubles: `Option::ok_or` could continue to exist and be deprecated in favor of `Option::ok(or:)`.
+
+There would probably be errors, especially around functions passed as closures in some places, when
+the current argument is `Option::or` for example: it could refer to
+`Option::or(self, optb: Option<T>)` or `Option::or(self, else f: F)`.
+
+One source-preserving solution to this is to add either a rule saying the one without names is the
+default one or an attribute that marks a method as the default one when ambiguous. Type errors would
+then catch the wrong cases, though there are probably situations where that woulnd't work.
+
+The non-source-preserving solution is for the compiler to propose fixes such as `Option::or(_:_:)`
+or to introduce unambiguous closures itself: `|a0, a1| a0.or(a1)`.
+
+As the main purpose of named arguments is clarity, the preferred solution would to ask for
+clarification when the situation is ambiguous. This has the huge disavantage of gating named
+arguments to a new edition and basically banning them from the standard library since code using
+previous editions has to compile with new versions of Rust.
+
+To ensure named arguments are accessible for all, passing `Option::or` (or any other overloaded)
+method would then always resolve to `Option::or(self, optb: Option<T>)`, the one without named
+arguments.
 
 ## Alternatives
 
@@ -981,8 +1075,6 @@ Named arguments have also been on the "nice-to-have-but-needs-design" list for y
 just the latest attempt at the "design" part.
 
 # Prior art
-
-[prior-art]: #prior-art
 
 Discuss prior art, both the good and the bad, in relation to this proposal. A few examples of what
 this can include are:
@@ -1505,17 +1597,15 @@ func random(_ range: Range<Int>) -> Int {
 
 # Unresolved questions
 
-[unresolved-questions]: #unresolved-questions
-
 - What parts of the design do you expect to resolve through the RFC process before this gets merged?
 - What parts of the design do you expect to resolve through the implementation of this feature
   before stabilization?
 - What related issues do you consider out of scope for this RFC that could be addressed in the
   future independently of the solution that comes out of this RFC?
 
-# Future possibilities
+TODO: this
 
-[future-possibilities]: #future-possibilities
+# Future possibilities
 
 Think about what the natural extension and evolution of your proposal would be and how it would
 affect the language and project as a whole in a holistic way. Try to use this section as a tool to

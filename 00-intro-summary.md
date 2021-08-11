@@ -28,8 +28,6 @@ But first, some goals for this RFC:
 
 # Summary
 
-[summary]: #summary
-
 This RFC introduces _named arguments_ for Rust. Named arguments are the ability to call a function ,
 method or closure while precising the caller-facing name of the arguments, greatly improving clarity
 in many situations. Of course functions where the argument is already clear do not have to use them:

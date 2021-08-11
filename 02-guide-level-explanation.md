@@ -1,7 +1,5 @@
 # Guide-level explanation
 
-[guide-level-explanation]: #guide-level-explanation
-
 Explain the proposal as if it was already included in the language and you were teaching it to
 another Rust programmer. That generally means:
 

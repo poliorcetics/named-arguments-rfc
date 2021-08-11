@@ -1,7 +1,5 @@
 # Prior art
 
-[prior-art]: #prior-art
-
 Discuss prior art, both the good and the bad, in relation to this proposal. A few examples of what
 this can include are:
 

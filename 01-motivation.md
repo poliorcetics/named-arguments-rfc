@@ -1,7 +1,5 @@
 # Motivation
 
-[motivation]: #motivation
-
 The main point of this section is that named arguments make for harder to misuse interfaces through
 clarity and simplicity of both declaration and usage.
 
