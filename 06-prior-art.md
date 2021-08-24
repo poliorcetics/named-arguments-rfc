@@ -417,6 +417,7 @@ be careful when two parameters are named similarly: there could be an uncaught b
 - Nim
 - Oz
 - Phix (named arguments must occur to the right of unnamed arguments but order does not matter)
+- Php 8
 - PowerShell
 - Python (2 & 3)
 - R (will fill missing named args with unnamed args in the given order, very brittle)

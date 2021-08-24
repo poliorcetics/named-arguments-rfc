@@ -751,7 +751,7 @@ impl MyTrait for WrongImpl {
 ```
 
 Traits are one of Rust most powerful feature and this RFC endavours to integrate well with them, to
-avoid making them second class citizen.
+avoid making them second class citizens.
 
 One special case that comes to mind is closure and the `Fn` family of traits ([with an exemple from
 the nomicon][nomicon-example]):
@@ -775,6 +775,10 @@ This `impl` is valid for **all** closures matching the expected types and arity 
 casting away of names in closures. Said another way, it is not possible to restrict an `Fn`
 implementation based on named arguments alone: the syntax is valid but casting will ensure it has no
 effect. As such, implementations can conflict if their only difference is named argument.
+
+To ensure future compatibilities, using named arguments in such a position would be banned (either a
+hard error or an error-by-default lint), so that if we ever specialize based on this, existing code
+is not suddenly broken.
 
 [nomicon-example]: https://doc.rust-lang.org/nomicon/hrtb.html
 
@@ -877,7 +881,8 @@ compiler would know what to expect as a type for the second parameter of `ffi_ca
 
 Such functions are forbidden from using named arguments _if_ they are overloaded based on them. If
 they are not, the function can be uniquely identified by just its name even for FFI, which is the
-point of this attribute.
+point of this attribute. Such functions would still be a warn-by-default lint because having
+different calling styles for FFI and Rust seems like a Bad Idea(TM).
 
 This allows Rust code to call such function using named arguments while C code will not have to use
 them, and thus makes the following example valid:
@@ -1468,6 +1473,7 @@ be careful when two parameters are named similarly: there could be an uncaught b
 - Nim
 - Oz
 - Phix (named arguments must occur to the right of unnamed arguments but order does not matter)
+- Php 8
 - PowerShell
 - Python (2 & 3)
 - R (will fill missing named args with unnamed args in the given order, very brittle)
@@ -1636,4 +1642,39 @@ fn with_kw_as_named(pub in: String) {
     // ERROR: `in` would be a variable here
 }
 ```
+
+## Variadic functions
+
+In Swift, named arguments arguments are used as boundaries to allow for functions with several
+variadic parameters. While such functions do not yet exist in Rust (and there is no hard requirement
+for them to do), this opens up the possibility:
+
+```rust
+// Some made-up syntax, not a proposition
+fn add_sub_several(pub add: usize..., pub sub: usize...) { /* ... */ }
+
+add_sub_several(add: 1, 2, 4, sub: 3, 5);
+```
+
+## Specialization and named arguments in closures
+
+In [Interaction with traits][interaction-with-traits], it was said the following case cannot be
+differentiated based on named arguments alone:
+
+```rust
+struct Closure<F> {
+    data: (u8, u16),
+    func: F,
+}
+
+impl<F> Closure<F>
+    where F: Fn(arg: &(u8, u16)) -> &u8,
+{
+    fn call(&self) -> &u8 {
+        (self.func)(&self.data)
+    }
+}
+```
+
+One could imagine a world where specialization allows this. This is out of scope for this RFC.
 
