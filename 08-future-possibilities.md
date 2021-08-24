@@ -32,3 +32,38 @@ fn with_kw_as_named(pub in: String) {
     // ERROR: `in` would be a variable here
 }
 ```
+
+## Variadic functions
+
+In Swift, named arguments arguments are used as boundaries to allow for functions with several
+variadic parameters. While such functions do not yet exist in Rust (and there is no hard requirement
+for them to do), this opens up the possibility:
+
+```rust
+// Some made-up syntax, not a proposition
+fn add_sub_several(pub add: usize..., pub sub: usize...) { /* ... */ }
+
+add_sub_several(add: 1, 2, 4, sub: 3, 5);
+```
+
+## Specialization and named arguments in closures
+
+In [Interaction with traits][interaction-with-traits], it was said the following case cannot be
+differentiated based on named arguments alone:
+
+```rust
+struct Closure<F> {
+    data: (u8, u16),
+    func: F,
+}
+
+impl<F> Closure<F>
+    where F: Fn(arg: &(u8, u16)) -> &u8,
+{
+    fn call(&self) -> &u8 {
+        (self.func)(&self.data)
+    }
+}
+```
+
+One could imagine a world where specialization allows this. This is out of scope for this RFC.
