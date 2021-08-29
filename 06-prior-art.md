@@ -45,6 +45,11 @@ Here are some past discussions on IRLO and past RFCs:
    on the issue wanted less magical sugar.
 1. [Keyword arguments #805](https://github.com/rust-lang/rfcs/pull/805)
 1. [Named arguments #2964](https://github.com/rust-lang/rfcs/pull/2964)
+1. [Pre-RFC thread for #2964](https://internals.rust-lang.org/t/pre-rfc-named-arguments/12730/):
+   there was much love for `.public_name` + `=` in this thread. Those were not chosen here for
+   reasons explained in [Rationale and Alternatives][rationale-and-alternatives]. This thread and
+   several before also raised concerns about the clunkiness of `pub`, again argued about in the
+   previous section.
 
 ### Recurring points
 
