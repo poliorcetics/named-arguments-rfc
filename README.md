@@ -48,12 +48,12 @@ active, it will have been updated.
 - [x] Intro / Summary
 - [x] Motivation
 - [x] Guide Level Explanation
-- [ ] Reference Level Explanation (**working on this**)
-- [ ] Drawbacks
-- [x] Rationale and Alternatives (**partially done only**)
+- [x] Reference Level Explanation
+- [x] Drawbacks
+- [x] Rationale and Alternatives
 - [x] Prior Art
-- [ ] Unresolved Questions
-- [ ] Future Possibilities
+- [x] Unresolved Questions
+- [x] Future Possibilities
 
 - [ ] Cleanup files of their expectations (at the top)
 
