@@ -13,3 +13,7 @@ orthogonal features. They compose well together in several languages but that do
 are inseparable from a design point of view.
 
 Whether they should be added to Rust or not should be considered in another RFC.
+
+## Allowing keywords
+
+See [Allow Keywords][allow-keywords] in Future Possibilities.
