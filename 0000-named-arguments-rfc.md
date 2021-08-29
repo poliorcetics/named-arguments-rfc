@@ -877,6 +877,18 @@ happening.
 It would be even easier in the case of a function call: `ffi_call(object, new(adding:))` because the
 compiler would know what to expect as a type for the second parameter of `ffi_call` here.
 
+## About `_`
+
+It is possible to write `fn foo(_: i32) {}` today, and it is often used when implementing traits.
+
+This RFC bans `fn foo(pub _: i32) {}` and `fn foo(_ name: i32) {}` (and so `fn foo(_ _: i32) {}`)
+because it would create an ambiguity with `fn foo(_: i32) {}` with can be named as `foo(_:)` and
+because named arguments are supposed to increase readability: `foo(_: 42)` is **not** improving
+anything about it.
+
+`fn foo(name _: i32) {}` is of course still available and not banned at all by this RFC: it is using
+`_` as the public name which is banned.
+
 ## Interaction with `#[no_mangle]`, `extern "C"` (or anything but the unstable Rust ABI)
 
 Such functions are forbidden from using named arguments _if_ they are overloaded based on them. If
@@ -933,8 +945,9 @@ type/number-based overload is subject to.
 
 There have been several choices made in this RFC that need justification. In no particular order:
 
-- Using `:`
+- Using `:` (see alternatives)
 - Using `pub` only sometimes
+- Clunkiness of `pub`
 - Allowing overloading through named arguments
 - Not allowing keywords in the public name (`for`, `in`, `as` especially)
 
@@ -1007,6 +1020,75 @@ a similar functionnality, which is important for consistency.
 
 ## Alternatives
 
+### Using `:` instead of `=`, `:=`, `=>`, ...
+
+#### Especially `=`
+
+Several macros in the Rust Standard Library have had a form of named arguments for a while:
+
+```rust
+println!("The answer is {x}{y}", x = 4, y = 2);
+```
+
+The problem is that they use `=`, not `:`, unlike this RFC. Despite that, I think it is important to
+keep `:` because `=` remind of an assignement and named arguments are **not** assigning to anything.
+
+#### Others
+
+- `:=` cannot be used backward compatibly because macros could be using it already and changing how
+  it is parsed would break those. I have not done a survey about this so I have no numbers to
+  present.
+
+- `=>` looks way too much like pattern matching when it is not.
+
+- `->` is used for return types, seems like a bad idea to give a completely different meaning.
+
+### Using an alternative sigil like `.`, `@`, ... because `pub` is clunky
+
+Lots of alternative forms have been proposed for named arguments, either as full blown (pre-)rfcs or
+as quick bikeshedding when discussing those. Most bikeshedded options will be ignored since they
+either ignore the declaration or call point, which is not possible in a serious attempt at named
+arguments. I will miss others because this section would be longer than the rest of the RFC if I did
+not.
+
+- `'name`: re-use the lifetime sigil. Lifetimes are already difficult enough (and conflict with
+  labels) without adding a third meaning to `'`.
+
+- Using one of `@$^#.` at both declaration and call point:
+
+```
+foo(@c = 5, @b = 3, @a = 1);
+foo($c = 5, $b = 3, $a = 1);
+foo(^c = 5, ^b = 3, ^a = 1);
+foo(#c = 5, #b = 3, #a = 1);
+foo(.c = 5, .b = 3, .a = 1);
+```
+
+I find all of those **very** clunky at the call point. Functions are often made to be called several
+times and having to wade through a sludge of ultimately unneeded symbols to understand calls seems
+like a Bad Idea (TM). It could be okay at the declaration point though, but the lack of symmetry
+could maybe hurt since it was not a keyword but a sigil ?
+
+[As said by Tom-Phinney](https://internals.rust-lang.org/t/pre-rfc-named-arguments/12730/19), `.`
+has an advantage though:
+
+> I like the leading point (`.`) because, for me, it implies that the following parameter name is
+> interpreted with respect to the called function name. It's clearly not method syntax, but for me
+> it does have a somewhat-similar mental model of name scope.
+
+I find that advantage quickly negated on multi-lines call though:
+
+```rust
+some_long_function(
+    unnamed_very_long_struct_decl { ... }, // < oups there was a comma here
+    .arg = (42, 44),
+    //   ^ maybe too easy to miss when skimming and think of a function call
+)
+```
+
+In this situation, the dot `.` is a hindrance. What's more, it adds clutter at the call site, which
+is a big no-no for this RFC.
+
 ### Completely disallow named arguments for `#[no_mangle]` and `extern`
 
 To ensure such functions are still first-class citizens in Rust, this has been rejected. It may
@@ -1043,6 +1125,23 @@ let my_conn = ConnectionBuilder::new()
     .build();
 ```
 
+### Use an attribute
+
+```rust
+#[with_named_arg] // or something else
+fn foo(a: i32) -> i32 { a * 2 + 4 }
+
+let b = foo(a: 42);
+```
+
+While this is very readable at the call site, it is somewhat heavy at the declaration point, does
+not allow mixing named and unnamed arguments (it could with something like `#[with_named_arg(a)]`,
+even heavier) and it adds even more bikeshedding: what do we call this attribute ? What if the
+perfect name is already taken by a macro from another crate ? It also either remove the opportunity
+to have different public and internal names or adds a lot of sigil :
+`#[with_named_arg(public_name = long_internal_name)]`, and probably doesn't compose well with
+patterns.
+
 ### Do nothing
 
 Without named arguments Rust is already a very good language. Named arguments are a nice feature and
@@ -1050,9 +1149,10 @@ can help with safety and soundness but they are not the greatest thing since sli
 Rust can live without them, as it already has for years.
 
 This has been rejected for several reasons in this RFC, reasons that have been explained earlier
-(safety, soundness) but also because the alternatives are either insufficient or too heavy-handed.
-Named arguments have also been on the "nice-to-have-but-needs-design" list for years. This RFC is
-just the latest attempt at the "design" part.
+(safety, soundness, increased readability outside of IDEs with type hints) but also because the
+alternatives are either insufficient or too heavy-handed. Named arguments have also been on the
+"nice-to-have-but-needs-design" list for years. This RFC is just the latest attempt at the "design"
+part.
 
 # Prior art
 
@@ -1101,6 +1201,11 @@ Here are some past discussions on IRLO and past RFCs:
    on the issue wanted less magical sugar.
 1. [Keyword arguments #805](https://github.com/rust-lang/rfcs/pull/805)
 1. [Named arguments #2964](https://github.com/rust-lang/rfcs/pull/2964)
+1. [Pre-RFC thread for #2964](https://internals.rust-lang.org/t/pre-rfc-named-arguments/12730/):
+   there was much love for `.public_name` + `=` in this thread. Those were not chosen here for
+   reasons explained in [Rationale and Alternatives][rationale-and-alternatives]. This thread and
+   several before also raised concerns about the clunkiness of `pub`, again argued about in the
+   previous section.
 
 ### Recurring points
 
@@ -1606,7 +1711,13 @@ func random(_ range: Range<Int>) -> Int {
 - What related issues do you consider out of scope for this RFC that could be addressed in the
   future independently of the solution that comes out of this RFC?
 
-TODO: this
+## Defaults parameters
+
+Default parameters and named arguments are often cited together but in reality they are quite
+orthogonal features. They compose well together in several languages but that does not means they
+are inseparable from a design point of view.
+
+Whether they should be added to Rust or not should be considered in another RFC.
 
 # Future possibilities
 

@@ -278,6 +278,18 @@ happening.
 It would be even easier in the case of a function call: `ffi_call(object, new(adding:))` because the
 compiler would know what to expect as a type for the second parameter of `ffi_call` here.
 
+## About `_`
+
+It is possible to write `fn foo(_: i32) {}` today, and it is often used when implementing traits.
+
+This RFC bans `fn foo(pub _: i32) {}` and `fn foo(_ name: i32) {}` (and so `fn foo(_ _: i32) {}`)
+because it would create an ambiguity with `fn foo(_: i32) {}` with can be named as `foo(_:)` and
+because named arguments are supposed to increase readability: `foo(_: 42)` is **not** improving
+anything about it.
+
+`fn foo(name _: i32) {}` is of course still available and not banned at all by this RFC: it is using
+`_` as the public name which is banned.
+
 ## Interaction with `#[no_mangle]`, `extern "C"` (or anything but the unstable Rust ABI)
 
 Such functions are forbidden from using named arguments _if_ they are overloaded based on them. If
