@@ -107,6 +107,24 @@ keep `:` because `=` remind of an assignment and named arguments are **not** ass
 
 - `->` is used for return types, seems like a bad idea to give a completely different meaning.
 
+### Using `as`
+
+Using `as` instead of `pub` can be found as an off-hand idea on Reddit and forums about named
+arguments and Rust, but it presents some defaults that are not there with `pub`. But first, here is
+how it would be used:
+
+```rust
+fn test(bar as baz: usize) { /* use baz here */ }
+
+// Use bar here
+test(bar: 42)
+```
+
+This form is limiting on some points: it is wasteful to have the same public and internal names:
+`data as data`, can easily be mistaken for a type cast and it almost entirely precludes introducing
+context-aware keywords in the future which would make functions like
+`fn EncodedString::new(data: String, as encoding: Encoding) -> EncodedString` possible.
+
 ### Using an alternative sigil like `.`, `@`, ... because `pub` is clunky
 
 Lots of alternative forms have been proposed for named arguments, either as full blown (pre-)RFCs or
