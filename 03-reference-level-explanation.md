@@ -151,11 +151,11 @@ impl MyTrait for WrongImpl {
 }
 ```
 
-Traits are one of Rust most powerful feature and this RFC endavours to integrate well with them, to
+Traits are one of Rust most powerful feature and this RFC endeavours to integrate well with them, to
 avoid making them second class citizens.
 
-One special case that comes to mind is closure and the `Fn` family of traits ([with an exemple from
-the nomicon][nomicon-example]):
+One special case that comes to mind is closure and the `Fn` family of traits ([with an example from
+the Nomicon][nomicon-example]):
 
 ```rust
 struct Closure<F> {
@@ -210,7 +210,7 @@ lang team.
 
 ## Interaction with function pointers
 
-In today's Rust, this is perfectly valid, even when using all clippy warnings:
+In today's Rust, this is perfectly valid, even when using all Clippy warnings:
 
 ```rust
 fn example1(a: u32) -> u32 { a }
@@ -295,7 +295,7 @@ anything about it.
 Such functions are forbidden from using named arguments _if_ they are overloaded based on them. If
 they are not, the function can be uniquely identified by just its name even for FFI, which is the
 point of this attribute. Such functions would still be a warn-by-default lint because having
-different calling styles for FFI and Rust seems like a Bad Idea(TM).
+different calling styles for FFI and Rust seems like a Bad Idea(TM) in most cases.
 
 This allows Rust code to call such function using named arguments while C code will not have to use
 them, and thus makes the following example valid:
@@ -311,7 +311,7 @@ callback(return_code: 42);
 callback(42);
 ```
 
-This one on the other hand, willwould not compile:
+This one on the other hand, would not compile:
 
 ```rust
 #[no_mangle]

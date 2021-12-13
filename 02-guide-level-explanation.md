@@ -25,7 +25,7 @@ ridiculous and redundant.
 
 This section will explain how to declare and use named arguments as a teacher may explain
 mathematics: it will present the concepts while abstracting away much of the reasoning, which is
-detailed more thouroughly in other sections (see [Reference-level
+detailed more thoroughly in other sections (see [Reference-level
 explanation][reference-level-explanation]). It is divided into three parts: declaring, calling and
 other details.
 
@@ -119,7 +119,7 @@ trait) cannot be omitted:
 `let mut arg = arg;` inside. This capability does not go away with named arguments.
 
 - When using `pub`; `mut` is placed after it to follow the current syntax of Rust where the
-  visibility alwasy comes first: `fn register(pub mut name: String)`.
+  visibility always comes first: `fn register(pub mut name: String)`.
 - When using an identifier, `mut` comes first: `fn new_db(mut named name: String) -> Database`.
 
 The exact same rules apply for `ref`.
@@ -129,12 +129,12 @@ If _both_ `ref` and `mut` are present, they use the same order as today: `ref mu
 
 ### When using a pattern
 
-Irrefutable patterns can be used in functions arguments today, and juste like `self`, they raise
-some questions.
+Irrefutable patterns can be used in functions arguments today, and just like `self`, they raise some
+questions.
 
 - `pub` **cannot** be used here since there is no identifier for it to expose.
 - The identifier **cannot** be a pattern. Its only use is as a public facing name, it does not
-  destructure anything nor can be used as a binding inside the function.
+  de-structure anything nor can be used as a binding inside the function.
 - The identifier is placed before the pattern as shown in the example below:
 
 ```rust

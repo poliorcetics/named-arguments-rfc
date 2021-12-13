@@ -20,11 +20,11 @@ my_vec.insert(elem: 2, at: 3)
 
 In the example code above it is not easy for a developer to remember which argument does what simply
 by looking at the method call, without having to write a little toy example or look at the
-documentation for the type (or the trait). Most of the time Rust helps by asking for differents
-types in its parameters, but that fails when the type _is_ the same. Autocompletion can help by
-providing the names and filling them in advance, meaning no more typing for most people, just
-clearer code. Code is also read more than it is written, the clearer it is, the less mistakes slip
-through reviews.
+documentation for the type (or the trait). Most of the time Rust helps by asking for different types
+in its parameters, but that fails when the type _is_ the same. Autocompletion can help by providing
+the names and filling them in advance, meaning no more typing for most people, just clearer code.
+Code is also read more than it is written, the clearer it is, the less mistakes slip through
+reviews.
 
 - Named arguments are simple to **create** compared to the other options.
 
@@ -36,7 +36,7 @@ parameters, 7 of which are named: a builder would be more useful in this situati
 
 - Named arguments are simple to **use** compared to the other options.
 
-Calling a builder for the `my_vec.insert` call above is clearly overengineering and creating a type
+Calling a builder for the `my_vec.insert` call above is clearly over-engineering and creating a type
 for such a simple operation is overkill too. Named arguments are made to fill this spot where the
 other solutions are too big for what's intended but clarity is lost without something more than
 positional arguments, especially when types do no conflict.
@@ -123,7 +123,7 @@ It is the same for [`f64::atan2`][f64-atan2]: is the parameter `x` or `y` when c
 
 An argument against named argument is that hints like those provided by Rust-Analyzer are here for
 those cases. This is true, but they are not always available. They can be disabled, reviewing a PR
-through a web interface does not have them, reading code on Github will not show them, maybe your
+through a web interface does not have them, reading code on GitHub will not show them, maybe your
 coworker does not like them, there are many reasons for them not to appear. Named arguments are part
 of the code, they always appear when intended to. Just like types, they help by adding another layer
 of clarity to code, which helps with soundness and safety, and just like types can be inferred when

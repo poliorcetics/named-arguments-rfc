@@ -77,11 +77,11 @@ my_vec.insert(elem: 2, at: 3)
 
 In the example code above it is not easy for a developer to remember which argument does what simply
 by looking at the method call, without having to write a little toy example or look at the
-documentation for the type (or the trait). Most of the time Rust helps by asking for differents
-types in its parameters, but that fails when the type _is_ the same. Autocompletion can help by
-providing the names and filling them in advance, meaning no more typing for most people, just
-clearer code. Code is also read more than it is written, the clearer it is, the less mistakes slip
-through reviews.
+documentation for the type (or the trait). Most of the time Rust helps by asking for different types
+in its parameters, but that fails when the type _is_ the same. Autocompletion can help by providing
+the names and filling them in advance, meaning no more typing for most people, just clearer code.
+Code is also read more than it is written, the clearer it is, the less mistakes slip through
+reviews.
 
 - Named arguments are simple to **create** compared to the other options.
 
@@ -93,7 +93,7 @@ parameters, 7 of which are named: a builder would be more useful in this situati
 
 - Named arguments are simple to **use** compared to the other options.
 
-Calling a builder for the `my_vec.insert` call above is clearly overengineering and creating a type
+Calling a builder for the `my_vec.insert` call above is clearly over-engineering and creating a type
 for such a simple operation is overkill too. Named arguments are made to fill this spot where the
 other solutions are too big for what's intended but clarity is lost without something more than
 positional arguments, especially when types do no conflict.
@@ -180,7 +180,7 @@ It is the same for [`f64::atan2`][f64-atan2]: is the parameter `x` or `y` when c
 
 An argument against named argument is that hints like those provided by Rust-Analyzer are here for
 those cases. This is true, but they are not always available. They can be disabled, reviewing a PR
-through a web interface does not have them, reading code on Github will not show them, maybe your
+through a web interface does not have them, reading code on GitHub will not show them, maybe your
 coworker does not like them, there are many reasons for them not to appear. Named arguments are part
 of the code, they always appear when intended to. Just like types, they help by adding another layer
 of clarity to code, which helps with soundness and safety, and just like types can be inferred when
@@ -236,7 +236,7 @@ ridiculous and redundant.
 
 This section will explain how to declare and use named arguments as a teacher may explain
 mathematics: it will present the concepts while abstracting away much of the reasoning, which is
-detailed more thouroughly in other sections (see [Reference-level
+detailed more thoroughly in other sections (see [Reference-level
 explanation][reference-level-explanation]). It is divided into three parts: declaring, calling and
 other details.
 
@@ -330,7 +330,7 @@ trait) cannot be omitted:
 `let mut arg = arg;` inside. This capability does not go away with named arguments.
 
 - When using `pub`; `mut` is placed after it to follow the current syntax of Rust where the
-  visibility alwasy comes first: `fn register(pub mut name: String)`.
+  visibility always comes first: `fn register(pub mut name: String)`.
 - When using an identifier, `mut` comes first: `fn new_db(mut named name: String) -> Database`.
 
 The exact same rules apply for `ref`.
@@ -340,12 +340,12 @@ If _both_ `ref` and `mut` are present, they use the same order as today: `ref mu
 
 ### When using a pattern
 
-Irrefutable patterns can be used in functions arguments today, and juste like `self`, they raise
-some questions.
+Irrefutable patterns can be used in functions arguments today, and just like `self`, they raise some
+questions.
 
 - `pub` **cannot** be used here since there is no identifier for it to expose.
 - The identifier **cannot** be a pattern. Its only use is as a public facing name, it does not
-  destructure anything nor can be used as a binding inside the function.
+  de-structure anything nor can be used as a binding inside the function.
 - The identifier is placed before the pattern as shown in the example below:
 
 ```rust
@@ -750,11 +750,11 @@ impl MyTrait for WrongImpl {
 }
 ```
 
-Traits are one of Rust most powerful feature and this RFC endavours to integrate well with them, to
+Traits are one of Rust most powerful feature and this RFC endeavours to integrate well with them, to
 avoid making them second class citizens.
 
-One special case that comes to mind is closure and the `Fn` family of traits ([with an exemple from
-the nomicon][nomicon-example]):
+One special case that comes to mind is closure and the `Fn` family of traits ([with an example from
+the Nomicon][nomicon-example]):
 
 ```rust
 struct Closure<F> {
@@ -809,7 +809,7 @@ lang team.
 
 ## Interaction with function pointers
 
-In today's Rust, this is perfectly valid, even when using all clippy warnings:
+In today's Rust, this is perfectly valid, even when using all Clippy warnings:
 
 ```rust
 fn example1(a: u32) -> u32 { a }
@@ -894,7 +894,7 @@ anything about it.
 Such functions are forbidden from using named arguments _if_ they are overloaded based on them. If
 they are not, the function can be uniquely identified by just its name even for FFI, which is the
 point of this attribute. Such functions would still be a warn-by-default lint because having
-different calling styles for FFI and Rust seems like a Bad Idea(TM).
+different calling styles for FFI and Rust seems like a Bad Idea(TM) in most cases.
 
 This allows Rust code to call such function using named arguments while C code will not have to use
 them, and thus makes the following example valid:
@@ -910,7 +910,7 @@ callback(return_code: 42);
 callback(42);
 ```
 
-This one on the other hand, willwould not compile:
+This one on the other hand, would not compile:
 
 ```rust
 #[no_mangle]
@@ -964,13 +964,13 @@ the current argument is `Option::or` for example: it could refer to
 
 One source-preserving solution to this is to add either a rule saying the one without names is the
 default one or an attribute that marks a method as the default one when ambiguous. Type errors would
-then catch the wrong cases, though there are probably situations where that woulnd't work.
+then catch the wrong cases, though there are probably situations where that wouldn't work.
 
 The non-source-preserving solution is for the compiler to propose fixes such as `Option::or(_:_:)`
 or to introduce unambiguous closures itself: `|a0, a1| a0.or(a1)`.
 
 As the main purpose of named arguments is clarity, the preferred solution would to ask for
-clarification when the situation is ambiguous. This has the huge disavantage of gating named
+clarification when the situation is ambiguous. This has the huge disadvantage of gating named
 arguments to a new edition and basically banning them from the standard library since code using
 previous editions has to compile with new versions of Rust.
 
@@ -1011,12 +1011,12 @@ raises a question: did the function writer intend to write `pub` or use a differ
 forgot ? Marking such cases as `pub` makes the original intent clear and reminds the developer that
 modifying the name is an API break.
 
-`pub` is not asked for when the two bindings are differents because the situation makes it clear
+`pub` is not asked for when the two bindings are different because the situation makes it clear
 already: two identifiers cannot be placed that way next to each other without an operator or a comma
 anywhere else in normal Rust (it can happen in macros though). Therefore the only possible case is
 that one name is public and the other is private. Using the first as the public name is then
 logical: it is in the position of the `pub` keyword, taking advantage of the similar placement with
-a similar functionnality, which is important for consistency.
+a similar functionality, which is important for consistency.
 
 ## Alternatives
 
@@ -1031,22 +1031,41 @@ println!("The answer is {x}{y}", x = 4, y = 2);
 ```
 
 The problem is that they use `=`, not `:`, unlike this RFC. Despite that, I think it is important to
-keep `:` because `=` remind of an assignement and named arguments are **not** assigning to anything.
+keep `:` because `=` remind of an assignment and named arguments are **not** assigning to anything.
 
 #### Others
 
 - `:=` cannot be used backward compatibly because macros could be using it already and changing how
   it is parsed would break those. I have not done a survey about this so I have no numbers to
-  present.
+  present. In the spirit of fairness, breaking how some macros are parsed has been done in the past
+  when it was determined very few used the pattern (usually via a crater run).
 
 - `=>` looks way too much like pattern matching when it is not.
 
 - `->` is used for return types, seems like a bad idea to give a completely different meaning.
 
+### Using `as`
+
+Using `as` instead of `pub` can be found as an off-hand idea on Reddit and forums about named
+arguments and Rust, but it presents some defaults that are not there with `pub`. But first, here is
+how it would be used:
+
+```rust
+fn test(bar as baz: usize) { /* use baz here */ }
+
+// Use bar here
+test(bar: 42)
+```
+
+This form is limiting on some points: it is wasteful to have the same public and internal names:
+`data as data`, can easily be mistaken for a type cast and it almost entirely precludes introducing
+context-aware keywords in the future which would make functions like
+`fn EncodedString::new(data: String, as encoding: Encoding) -> EncodedString` possible.
+
 ### Using an alternative sigil like `.`, `@`, ... because `pub` is clunky
 
-Lots of alternative forms have been proposed for named arguments, either as full blown (pre-)rfcs or
-as quick bikeshedding when discussing those. Most bikeshedded options will be ignored since they
+Lots of alternative forms have been proposed for named arguments, either as full blown (pre-)RFCs or
+as quick bike-shedding when discussing those. Most bike-shed options will be ignored since they
 either ignore the declaration or call point, which is not possible in a serious attempt at named
 arguments. I will miss others because this section would be longer than the rest of the RFC if I did
 not.
@@ -1136,7 +1155,7 @@ let b = foo(a: 42);
 
 While this is very readable at the call site, it is somewhat heavy at the declaration point, does
 not allow mixing named and unnamed arguments (it could with something like `#[with_named_arg(a)]`,
-even heavier) and it adds even more bikeshedding: what do we call this attribute ? What if the
+even heavier) and it adds even more bike-shedding: what do we call this attribute ? What if the
 perfect name is already taken by a macro from another crate ? It also either remove the opportunity
 to have different public and internal names or adds a lot of sigil :
 `#[with_named_arg(public_name = long_internal_name)]`, and probably doesn't compose well with
@@ -1183,14 +1202,14 @@ This subsection focuses on the discussion that happened in the Rust world about 
 > DISCLAIMER: I did not read _everything_ in details, it is possible I missed things. I at least
 > skimmed quickly over all of those listed below.
 
-### Relevants discussions
+### Relevant discussions
 
 Here are some past discussions on IRLO and past RFCs:
 
 1. The [Wishlist issue](https://github.com/rust-lang/rfcs/issues/323) says named arguments (and
    other features) are thought about but the design space must be studied before rushing into one
    solution that will later prove insufficient or even plain wrong. Even if this RFC is not approved
-   I hope the section below about other programming languages listing the different possibilites
+   I hope the section below about other programming languages listing the different possibilities
    chosen by others will help future RFCs that will attempt to tackle this or something similar.
 1. The (I think) [first RFC to propose them](https://github.com/rust-lang/rfcs/pull/257) introduced
    them in conjunction with _default parameters_ and was closed as postponed. Some remarks on this
@@ -1226,7 +1245,7 @@ summarise most of them here. They are in no particular order.
 - **Named arguments encourage less well thought out interfaces**: I do not think any conclusive
   evidence has ever been brought to light about this point. On the other hand, the opposite has been
   extensively studied and battle-tested through Swift's version of the feature, which is lauded by
-  practionners of the language, notably library designers. Another example, from Rust even, is
+  practitioners of the language, notably library designers. Another example, from Rust even, is
   structs. Why is `Latitude { x: 42.1, y: 84.2 }` (instead of `Latitude { 42.1, 84.2 }`) seen as
   good if named arguments are not good ? To go further, why even name types ? We only need to know
   the type layout after all, and then we can access all of its data through offsets and
@@ -1358,7 +1377,7 @@ preferred language. This section will look at what other languages have done and
 solved the problems that named arguments attempts to solve.
 
 Since many languages have them in some form or other this will be more of a list presenting the
-differents options with a summary at the end, not a list of functionalities per language.
+different options with a summary at the end, not a list of functionalities per language.
 
 Note that languages may appear in several categories: they are not exclusive. All languages ever
 created are not listed and it is entirely possible a solution (and the language using it) was
@@ -1470,7 +1489,7 @@ widening API surface and adding boilerplate for every user of the library, not j
 
 #### Languages using this method
 
-- ALGOL 68 (not kwown to be used in any real code though)
+- ALGOL 68 (not known to be used in any real code though)
 - Bracmat
 - C
 - C++
@@ -1549,7 +1568,7 @@ When languages have this feature, using named arguments is left to the user, not
 library but it is library authors that are responsible for the names and changing them is a
 source-breaking change.
 
-This places additionial burden on library authors without offering them much: since users can just
+This places additional burden on library authors without offering them much: since users can just
 ignore the names authors are not able to rely on them to help with clarity and must instead often
 design around them.
 
@@ -1581,7 +1600,7 @@ be careful when two parameters are named similarly: there could be an uncaught b
 - Php 8
 - PowerShell
 - Python (2 & 3)
-- R (will fill missing named args with unnamed args in the given order, very brittle)
+- R (will fill missing named arguments with unnamed arguments in the given order, very brittle)
 - Racket
 - Raku (seems to be the same behaviour as R)
 - Ruby
@@ -1634,7 +1653,7 @@ and functions in Swift are documented with the name of their arguments:
 > Note: while this section concentrate on Swift, it must be noted that OCaml provides the same
 > features using a different approach. See [this link][ocaml-rosetta] for more informations and an
 > example. The example of Swift has been chosen because it is more widely used than OCaml and closer
-> the C-family of languages, ensuring its syntax will be understood even by non-practioners, and
+> the C-family of languages, ensuring its syntax will be understood even by non-practitioners, and
 > especially the Rust community that is the target of this document. The same goes for Objective-C
 > and AppleScript.
 

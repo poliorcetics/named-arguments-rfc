@@ -27,13 +27,13 @@ the current argument is `Option::or` for example: it could refer to
 
 One source-preserving solution to this is to add either a rule saying the one without names is the
 default one or an attribute that marks a method as the default one when ambiguous. Type errors would
-then catch the wrong cases, though there are probably situations where that woulnd't work.
+then catch the wrong cases, though there are probably situations where that wouldn't work.
 
 The non-source-preserving solution is for the compiler to propose fixes such as `Option::or(_:_:)`
 or to introduce unambiguous closures itself: `|a0, a1| a0.or(a1)`.
 
 As the main purpose of named arguments is clarity, the preferred solution would to ask for
-clarification when the situation is ambiguous. This has the huge disavantage of gating named
+clarification when the situation is ambiguous. This has the huge disadvantage of gating named
 arguments to a new edition and basically banning them from the standard library since code using
 previous editions has to compile with new versions of Rust.
 
@@ -74,12 +74,12 @@ raises a question: did the function writer intend to write `pub` or use a differ
 forgot ? Marking such cases as `pub` makes the original intent clear and reminds the developer that
 modifying the name is an API break.
 
-`pub` is not asked for when the two bindings are differents because the situation makes it clear
+`pub` is not asked for when the two bindings are different because the situation makes it clear
 already: two identifiers cannot be placed that way next to each other without an operator or a comma
 anywhere else in normal Rust (it can happen in macros though). Therefore the only possible case is
 that one name is public and the other is private. Using the first as the public name is then
 logical: it is in the position of the `pub` keyword, taking advantage of the similar placement with
-a similar functionnality, which is important for consistency.
+a similar functionality, which is important for consistency.
 
 ## Alternatives
 
@@ -94,13 +94,14 @@ println!("The answer is {x}{y}", x = 4, y = 2);
 ```
 
 The problem is that they use `=`, not `:`, unlike this RFC. Despite that, I think it is important to
-keep `:` because `=` remind of an assignement and named arguments are **not** assigning to anything.
+keep `:` because `=` remind of an assignment and named arguments are **not** assigning to anything.
 
 #### Others
 
 - `:=` cannot be used backward compatibly because macros could be using it already and changing how
   it is parsed would break those. I have not done a survey about this so I have no numbers to
-  present.
+  present. In the spirit of fairness, breaking how some macros are parsed has been done in the past
+  when it was determined very few used the pattern (usually via a crater run).
 
 - `=>` looks way too much like pattern matching when it is not.
 
@@ -108,8 +109,8 @@ keep `:` because `=` remind of an assignement and named arguments are **not** as
 
 ### Using an alternative sigil like `.`, `@`, ... because `pub` is clunky
 
-Lots of alternative forms have been proposed for named arguments, either as full blown (pre-)rfcs or
-as quick bikeshedding when discussing those. Most bikeshedded options will be ignored since they
+Lots of alternative forms have been proposed for named arguments, either as full blown (pre-)RFCs or
+as quick bike-shedding when discussing those. Most bike-shed options will be ignored since they
 either ignore the declaration or call point, which is not possible in a serious attempt at named
 arguments. I will miss others because this section would be longer than the rest of the RFC if I did
 not.
@@ -199,7 +200,7 @@ let b = foo(a: 42);
 
 While this is very readable at the call site, it is somewhat heavy at the declaration point, does
 not allow mixing named and unnamed arguments (it could with something like `#[with_named_arg(a)]`,
-even heavier) and it adds even more bikeshedding: what do we call this attribute ? What if the
+even heavier) and it adds even more bike-shedding: what do we call this attribute ? What if the
 perfect name is already taken by a macro from another crate ? It also either remove the opportunity
 to have different public and internal names or adds a lot of sigil :
 `#[with_named_arg(public_name = long_internal_name)]`, and probably doesn't compose well with

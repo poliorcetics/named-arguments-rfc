@@ -27,14 +27,14 @@ This subsection focuses on the discussion that happened in the Rust world about 
 > DISCLAIMER: I did not read _everything_ in details, it is possible I missed things. I at least
 > skimmed quickly over all of those listed below.
 
-### Relevants discussions
+### Relevant discussions
 
 Here are some past discussions on IRLO and past RFCs:
 
 1. The [Wishlist issue](https://github.com/rust-lang/rfcs/issues/323) says named arguments (and
    other features) are thought about but the design space must be studied before rushing into one
    solution that will later prove insufficient or even plain wrong. Even if this RFC is not approved
-   I hope the section below about other programming languages listing the different possibilites
+   I hope the section below about other programming languages listing the different possibilities
    chosen by others will help future RFCs that will attempt to tackle this or something similar.
 1. The (I think) [first RFC to propose them](https://github.com/rust-lang/rfcs/pull/257) introduced
    them in conjunction with _default parameters_ and was closed as postponed. Some remarks on this
@@ -70,7 +70,7 @@ summarise most of them here. They are in no particular order.
 - **Named arguments encourage less well thought out interfaces**: I do not think any conclusive
   evidence has ever been brought to light about this point. On the other hand, the opposite has been
   extensively studied and battle-tested through Swift's version of the feature, which is lauded by
-  practionners of the language, notably library designers. Another example, from Rust even, is
+  practitioners of the language, notably library designers. Another example, from Rust even, is
   structs. Why is `Latitude { x: 42.1, y: 84.2 }` (instead of `Latitude { 42.1, 84.2 }`) seen as
   good if named arguments are not good ? To go further, why even name types ? We only need to know
   the type layout after all, and then we can access all of its data through offsets and
@@ -202,7 +202,7 @@ preferred language. This section will look at what other languages have done and
 solved the problems that named arguments attempts to solve.
 
 Since many languages have them in some form or other this will be more of a list presenting the
-differents options with a summary at the end, not a list of functionalities per language.
+different options with a summary at the end, not a list of functionalities per language.
 
 Note that languages may appear in several categories: they are not exclusive. All languages ever
 created are not listed and it is entirely possible a solution (and the language using it) was
@@ -314,7 +314,7 @@ widening API surface and adding boilerplate for every user of the library, not j
 
 #### Languages using this method
 
-- ALGOL 68 (not kwown to be used in any real code though)
+- ALGOL 68 (not known to be used in any real code though)
 - Bracmat
 - C
 - C++
@@ -393,7 +393,7 @@ When languages have this feature, using named arguments is left to the user, not
 library but it is library authors that are responsible for the names and changing them is a
 source-breaking change.
 
-This places additionial burden on library authors without offering them much: since users can just
+This places additional burden on library authors without offering them much: since users can just
 ignore the names authors are not able to rely on them to help with clarity and must instead often
 design around them.
 
@@ -425,7 +425,7 @@ be careful when two parameters are named similarly: there could be an uncaught b
 - Php 8
 - PowerShell
 - Python (2 & 3)
-- R (will fill missing named args with unnamed args in the given order, very brittle)
+- R (will fill missing named arguments with unnamed arguments in the given order, very brittle)
 - Racket
 - Raku (seems to be the same behaviour as R)
 - Ruby
@@ -478,7 +478,7 @@ and functions in Swift are documented with the name of their arguments:
 > Note: while this section concentrate on Swift, it must be noted that OCaml provides the same
 > features using a different approach. See [this link][ocaml-rosetta] for more informations and an
 > example. The example of Swift has been chosen because it is more widely used than OCaml and closer
-> the C-family of languages, ensuring its syntax will be understood even by non-practioners, and
+> the C-family of languages, ensuring its syntax will be understood even by non-practitioners, and
 > especially the Rust community that is the target of this document. The same goes for Objective-C
 > and AppleScript.
 
