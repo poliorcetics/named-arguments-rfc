@@ -1592,6 +1592,7 @@ be careful when two parameters are named similarly: there could be an uncaught b
 - Lasso (only unordered, not optional)
 - Lua
 - Maple
+- Meson
 - Modula-3
 - Nermerle
 - Nim
