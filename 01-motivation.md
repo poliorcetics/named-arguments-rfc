@@ -127,8 +127,8 @@ through a web interface does not have them, reading code on GitHub will not show
 coworker does not like them, there are many reasons for them not to appear. Named arguments are part
 of the code, they always appear when intended to. Just like types, they help by adding another layer
 of clarity to code, which helps with soundness and safety, and just like types can be inferred when
-writing `let a = b + c`, named arguments as proposed here are not mandatory: forcing `sin(x: x)` is
-**not** improving anything.
+writing `let a = b + c`, named arguments as proposed here are not mandatory for each and every
+function: forcing `sin(x: x)` is **not** improving anything.
 
 - Improve coherence in the language.
 
