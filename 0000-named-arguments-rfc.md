@@ -421,7 +421,10 @@ us to pass functions and closures as arguments. Below is how named arguments beh
 pub struct Point { x: f32, y: f32 }
 
 impl Point {
-    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+    pub fn strange_operation(
+        &self,
+        f: impl Fn(add: f32, mul: f32) -> (f32, f32)
+    ) -> (f32, f32) {
         f(add: self.x, mul: self.y)
     }
 }
@@ -447,10 +450,19 @@ some_point.strange_operation(|add, mul| twos(add, mul))
 some_point.strange_operation(|add, mul| twos(x: add, mul))
 
 // Disambiguation version
+// Those are NOT method calls and the ending ':' is mandatory with this syntax,
+// just as '_' is for anonymous arguments
 some_point.strange_operation(twos(_:_:))
 some_point.strange_operation(twos(x:_:))
 some_point.strange_operation(closure(add:other:))
 ```
+
+Note how the names declared in the `Point::strange_operation`'s `f` closure are not mandatory at the
+call site: `some_point.strange_operation(twos(_:_:))` does not expose the names expected but it
+still works: this is a feature, which 'casts' argument names when passing a function as closure. It
+is here to help with brevity and clarity: while we could require the long form all the time, it
+would be heavy and does not add much value since the two versions after are still unambiguous in
+terms of the passed function.
 
 #### Disallowed calls
 
@@ -467,11 +479,9 @@ fn twos(pub x: f32) -> (f32, f32) {
 }
 
 some_point.strange_operation(twos(x:y:)) // OK
-some_point.strange_operation(twos) // ERROR, even if unambiguous from the parameter count POV
+some_point.strange_operation(twos) // ERROR, even if unambiguous from the parameter count POV,
+                                   // syntax reserved for a function with no arguments at all
 ```
-
-In the same way, `some_point.strange_operation(closure)` is also banned for being ambiguous and
-potentially dangerous.
 
 See [Overloading resolution][overloading-resolution] for details on this behavior.
 
@@ -480,7 +490,7 @@ See [Overloading resolution][overloading-resolution] for details on this behavio
 ### Using named arguments with `trait`s
 
 Named arguments are fully usable in `trait`s and types implementing those must respect the _public_
-facing name of the argument, the private one can be modified:
+facing name of the argument, the private one can be modified in `impl`ementations:
 
 ```rust
 trait Connection {
@@ -583,7 +593,7 @@ While leaky, this is very useful to understand some parameters and have names to
 documentation, like for [`f32::mul_add`][mul-add], and removing it to instead show only named
 arguments would be very detrimental to the user experience.
 
-Instead `rustdoc` behaves as such:
+Instead `rustdoc` would now behave as such:
 
 - Insert the keyword `pub` before arguments that are public and declared with `pub`:
   `fn register(pub name: String)`.
@@ -593,7 +603,8 @@ Instead `rustdoc` behaves as such:
 - Keep the behavior of showing `_` when a pattern was used as the argument (like above).
 - Keep hiding `mut` and `ref` like currently done.
 - Allow intradoc-links using `[link](register(_:surname:))` to differentiate overloads (writing
-  `[link](register)` would refer to a `register` function that takes only unnamed arguments).
+  `[link](register)` would refer to a `register` function that takes only unnamed arguments, to
+  avoid silently breaking the link if an overload is added).
 
 [mul-add]: https://doc.rust-lang.org/stable/std/primitive.f32.html#method.mul_add
 
@@ -752,33 +763,6 @@ impl MyTrait for WrongImpl {
 
 Traits are one of Rust most powerful feature and this RFC endeavours to integrate well with them, to
 avoid making them second class citizens.
-
-One special case that comes to mind is closure and the `Fn` family of traits ([with an example from
-the Nomicon][nomicon-example]):
-
-```rust
-struct Closure<F> {
-    data: (u8, u16),
-    func: F,
-}
-
-impl<F> Closure<F>
-    where F: Fn(arg: &(u8, u16)) -> &u8,
-{
-    fn call(&self) -> &u8 {
-        (self.func)(&self.data)
-    }
-}
-```
-
-This `impl` is valid for **all** closures matching the expected types and arity thanks to implicit
-casting away of names in closures. Said another way, it is not possible to restrict an `Fn`
-implementation based on named arguments alone: the syntax is valid but casting will ensure it has no
-effect. As such, implementations can conflict if their only difference is named argument.
-
-To ensure future compatibilities, using named arguments in such a position would be banned (either a
-hard error or an error-by-default lint), so that if we ever specialize based on this, existing code
-is not suddenly broken.
 
 [nomicon-example]: https://doc.rust-lang.org/nomicon/hrtb.html
 
@@ -951,33 +935,14 @@ There have been several choices made in this RFC that need justification. In no 
 - Allowing overloading through named arguments
 - Not allowing keywords in the public name (`for`, `in`, `as` especially)
 
-TODO: explain choices
-
 ### Allowing overloading
 
 The form of overload proposed would notably allow moving the standard library mostly without
 troubles: `Option::ok_or` could continue to exist and be deprecated in favor of `Option::ok(or:)`.
 
-There would probably be errors, especially around functions passed as closures in some places, when
-the current argument is `Option::or` for example: it could refer to
-`Option::or(self, optb: Option<T>)` or `Option::or(self, else f: F)`.
-
-One source-preserving solution to this is to add either a rule saying the one without names is the
-default one or an attribute that marks a method as the default one when ambiguous. Type errors would
-then catch the wrong cases, though there are probably situations where that wouldn't work.
-
-The non-source-preserving solution is for the compiler to propose fixes such as `Option::or(_:_:)`
-or to introduce unambiguous closures itself: `|a0, a1| a0.or(a1)`.
-
-As the main purpose of named arguments is clarity, the preferred solution would to ask for
-clarification when the situation is ambiguous. This has the huge disadvantage of gating named
-arguments to a new edition and basically banning them from the standard library since code using
-previous editions has to compile with new versions of Rust.
-
-To ensure named arguments are accessible for all, passing `Option::or` (or any other overloaded)
-method would then always resolve to `Option::or(self, optb: Option<T>)`, the one without named
-arguments and the compiler would complain if this form is used for a method taking named arguments,
-even if currently unambiguous.
+The proposed rules for overloading would mean all currently existing Rust code would stay valid
+since the default resolution for `GetClosure::get(my_function)` would never call a function with
+named arguments.
 
 ### Disallowing keywords
 
@@ -1743,6 +1708,39 @@ Whether they should be added to Rust or not should be considered in another RFC.
 
 See [Allow Keywords][allow-keywords] in Future Possibilities.
 
+## Interactions with closure
+
+One special case that comes to mind is closure and the `Fn` family of traits ([with an example from
+the Nomicon][nomicon-example]):
+
+```rust
+struct Closure<F> {
+    data: (u8, u16),
+    func: F,
+}
+
+impl<F> Closure<F>
+    where F: Fn(arg: &(u8, u16)) -> &u8,
+{
+    fn call(&self) -> &u8 {
+        (self.func)(arg: &self.data)
+    }
+}
+```
+
+Should this impl also be valid for `Fn(&(u8, u16)) -> &u8` ? Or `Fn(other: &(u8, u16)) -> &u8` ?
+
+I would argue yes, since [Calling a function with named arguments
+indirectly][calling-a-function-with-named-arguments-indirectly] shows us names can be cast away when
+needed: not allowing it would be an unnecessary papercut.
+
+I would also argue no: named arguments should be considered like specified generic arguments:
+`Ì: Iterator<Item = u16>` does not accept `I: Iterator<Item = u8>` so `impl` depending on named
+arguments should take them into account.
+
+This can be considered a form of specialization maybe, and so out of scope for this RFC. I do not
+know the internals of rustc enough to know about how the `Fn` traits are implemented.
+
 # Future possibilities
 
 Think about what the natural extension and evolution of your proposal would be and how it would
@@ -1790,26 +1788,4 @@ fn add_sub_several(pub add: usize..., pub sub: usize...) { /* ... */ }
 
 add_sub_several(add: 1, 2, 4, sub: 3, 5);
 ```
-
-## Specialization and named arguments in closures
-
-In [Interaction with traits][interaction-with-traits], it was said the following case cannot be
-differentiated based on named arguments alone:
-
-```rust
-struct Closure<F> {
-    data: (u8, u16),
-    func: F,
-}
-
-impl<F> Closure<F>
-    where F: Fn(arg: &(u8, u16)) -> &u8,
-{
-    fn call(&self) -> &u8 {
-        (self.func)(&self.data)
-    }
-}
-```
-
-One could imagine a world where specialization allows this. This is out of scope for this RFC.
 

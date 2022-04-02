@@ -154,33 +154,6 @@ impl MyTrait for WrongImpl {
 Traits are one of Rust most powerful feature and this RFC endeavours to integrate well with them, to
 avoid making them second class citizens.
 
-One special case that comes to mind is closure and the `Fn` family of traits ([with an example from
-the Nomicon][nomicon-example]):
-
-```rust
-struct Closure<F> {
-    data: (u8, u16),
-    func: F,
-}
-
-impl<F> Closure<F>
-    where F: Fn(arg: &(u8, u16)) -> &u8,
-{
-    fn call(&self) -> &u8 {
-        (self.func)(&self.data)
-    }
-}
-```
-
-This `impl` is valid for **all** closures matching the expected types and arity thanks to implicit
-casting away of names in closures. Said another way, it is not possible to restrict an `Fn`
-implementation based on named arguments alone: the syntax is valid but casting will ensure it has no
-effect. As such, implementations can conflict if their only difference is named argument.
-
-To ensure future compatibilities, using named arguments in such a position would be banned (either a
-hard error or an error-by-default lint), so that if we ever specialize based on this, existing code
-is not suddenly broken.
-
 [nomicon-example]: https://doc.rust-lang.org/nomicon/hrtb.html
 
 ## Interaction with type ascription

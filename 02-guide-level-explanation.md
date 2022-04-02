@@ -210,7 +210,10 @@ us to pass functions and closures as arguments. Below is how named arguments beh
 pub struct Point { x: f32, y: f32 }
 
 impl Point {
-    pub fn strange_operation(&self, f: impl Fn(add: f32, mul: f32) -> (f32, f32)) -> (f32, f32) {
+    pub fn strange_operation(
+        &self,
+        f: impl Fn(add: f32, mul: f32) -> (f32, f32)
+    ) -> (f32, f32) {
         f(add: self.x, mul: self.y)
     }
 }
@@ -236,10 +239,19 @@ some_point.strange_operation(|add, mul| twos(add, mul))
 some_point.strange_operation(|add, mul| twos(x: add, mul))
 
 // Disambiguation version
+// Those are NOT method calls and the ending ':' is mandatory with this syntax,
+// just as '_' is for anonymous arguments
 some_point.strange_operation(twos(_:_:))
 some_point.strange_operation(twos(x:_:))
 some_point.strange_operation(closure(add:other:))
 ```
+
+Note how the names declared in the `Point::strange_operation`'s `f` closure are not mandatory at the
+call site: `some_point.strange_operation(twos(_:_:))` does not expose the names expected but it
+still works: this is a feature, which 'casts' argument names when passing a function as closure. It
+is here to help with brevity and clarity: while we could require the long form all the time, it
+would be heavy and does not add much value since the two versions after are still unambiguous in
+terms of the passed function.
 
 #### Disallowed calls
 
@@ -256,11 +268,9 @@ fn twos(pub x: f32) -> (f32, f32) {
 }
 
 some_point.strange_operation(twos(x:y:)) // OK
-some_point.strange_operation(twos) // ERROR, even if unambiguous from the parameter count POV
+some_point.strange_operation(twos) // ERROR, even if unambiguous from the parameter count POV,
+                                   // syntax reserved for a function with no arguments at all
 ```
-
-In the same way, `some_point.strange_operation(closure)` is also banned for being ambiguous and
-potentially dangerous.
 
 See [Overloading resolution][overloading-resolution] for details on this behavior.
 
@@ -269,7 +279,7 @@ See [Overloading resolution][overloading-resolution] for details on this behavio
 ### Using named arguments with `trait`s
 
 Named arguments are fully usable in `trait`s and types implementing those must respect the _public_
-facing name of the argument, the private one can be modified:
+facing name of the argument, the private one can be modified in `impl`ementations:
 
 ```rust
 trait Connection {
@@ -372,7 +382,7 @@ While leaky, this is very useful to understand some parameters and have names to
 documentation, like for [`f32::mul_add`][mul-add], and removing it to instead show only named
 arguments would be very detrimental to the user experience.
 
-Instead `rustdoc` behaves as such:
+Instead `rustdoc` would now behave as such:
 
 - Insert the keyword `pub` before arguments that are public and declared with `pub`:
   `fn register(pub name: String)`.
@@ -382,6 +392,7 @@ Instead `rustdoc` behaves as such:
 - Keep the behavior of showing `_` when a pattern was used as the argument (like above).
 - Keep hiding `mut` and `ref` like currently done.
 - Allow intradoc-links using `[link](register(_:surname:))` to differentiate overloads (writing
-  `[link](register)` would refer to a `register` function that takes only unnamed arguments).
+  `[link](register)` would refer to a `register` function that takes only unnamed arguments, to
+  avoid silently breaking the link if an overload is added).
 
 [mul-add]: https://doc.rust-lang.org/stable/std/primitive.f32.html#method.mul_add
