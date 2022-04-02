@@ -204,8 +204,7 @@ This would allow reusing short function names while adapting them to context or 
 capabilities, as is already possible for types through the use of generics. See the example in the
 guide-level explanation for details.
 
-[cargo-named-args]:
-  https://github.com/rust-lang/cargo/blob/b842849732f89df8675eb2d933c384d6338e4466/src/bin/cargo/commands/test.rs#L107-L113
+[cargo-named-args]: https://github.com/rust-lang/cargo/blob/b842849732f89df8675eb2d933c384d6338e4466/src/bin/cargo/commands/test.rs#L107-L113
 [vec-reserve-exact]: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.reserve_exact
 [f64-atan2]: https://doc.rust-lang.org/stable/std/primitive.f64.html#method.atan2
 
@@ -804,8 +803,7 @@ The first _always_ has the form `expr : type`, the second `expected_identifier :
 What's more, there is talk about [disallowing type ascription in some places][disallow-asc] by the
 lang team.
 
-[disallow-asc]:
-  https://rust-lang.zulipchat.com/#narrow/stream/269230-t-lang.2Ftype-ascription/topic/how.20to.20disallow.20ascription
+[disallow-asc]: https://rust-lang.zulipchat.com/#narrow/stream/269230-t-lang.2Ftype-ascription/topic/how.20to.20disallow.20ascription
 
 ## Interaction with function pointers
 
@@ -1367,8 +1365,7 @@ fn main() {
 }
 ```
 
-[nightly-overload]:
-  https://lazy.codes/posts/awesome-unstable-rust-features/#fn-traits-and-unboxed-closures
+[nightly-overload]: https://lazy.codes/posts/awesome-unstable-rust-features/#fn-traits-and-unboxed-closures
 
 ## What about other programming languages ?
 
@@ -1429,12 +1426,9 @@ llvm::sys::fs::real_path(
 I do not know of a single programming language that does not support the second form, even COBOL can
 do it.
 
-[ex1]:
-  https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L794
-[ex2]:
-  https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L818
-[ex3]:
-  https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L849
+[ex1]: https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L794
+[ex2]: https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L818
+[ex3]: https://github.com/llvm/llvm-project/blob/c6a384df1f8ab85815160297543ab329e02560ef/clang-tools-extra/clangd/tool/ClangdMain.cpp#L849
 
 ### Named arguments through direct types
 
