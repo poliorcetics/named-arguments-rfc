@@ -9,4 +9,4 @@ generate:
 
 # Format files in places
 format:
-    prettier -lw *.md
+    prettier --prose-wrap always --print-width 100 -l -w *.md
